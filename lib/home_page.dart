@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:shop/drawer/drawer_items.dart';
+import 'package:shop/login/auth_provider.dart';
+import 'package:shop/login/login_screen.dart';
 import './navigation_screens/cart.dart';
 import './navigation_screens/categories.dart';
 import './navigation_screens/myhome.dart';
 import './navigation_screens/offers.dart';
 
 class HomePage extends StatefulWidget {
+  static const routeName = '/homePageRoute';
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -91,8 +95,11 @@ class _HomePageState extends State<HomePage> {
             onPressed: () {},
           ),
           IconButton(
-            icon: Icon(Icons.account_circle),
-            onPressed: () {},
+            icon: Icon(MdiIcons.logout),
+            onPressed: () {
+              AuthProvider().signOutWithGoogle();
+              Navigator.of(context).pushReplacementNamed(LoginPage.routeName);
+            },
           ),
         ],
         title: Text('Anil Store'),

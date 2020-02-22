@@ -44,14 +44,6 @@ class _DrawerItemsState extends State<DrawerItems> {
             ),
             ListTile(
               title: Text(
-                'Notification Preference',
-                style: optionStyleDrawer,
-              ),
-              leading: Icon(Icons.notification_important),
-              onTap: () => Navigator.of(context).pop(),
-            ),
-            ListTile(
-              title: Text(
                 'My Orders',
                 style: optionStyleDrawer,
               ),

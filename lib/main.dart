@@ -1,7 +1,10 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shop/Screens/product_screen.dart';
+import 'package:shop/login/login_screen.dart';
+import './login/phone_login_screen.dart';
 import './home_page.dart';
 
 void main() {
@@ -21,8 +24,10 @@ class MyApp extends StatelessWidget {
         accentColor: Colors.red,
       ),
       routes: <String, WidgetBuilder>{
-        '/homePage': (BuildContext context) => HomePage(),
-        '/ProductScreen':(BuildContext context) => ProductScreen(),
+        HomePage.routeName: (BuildContext context) => HomePage(),
+        ProductScreen.routeName: (BuildContext context) => ProductScreen(),
+        LoginPage.routeName: (BuildContext context) => LoginPage(),
+        PhoneLogin.routeName: (BuildContext context) => PhoneLogin(),
       },
     );
   }
@@ -41,11 +46,14 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<Timer> loadScreen() async {
-    return Timer(Duration(seconds: 3), _loadUI);
+    return Timer(Duration(seconds: 1), _loadUI);
   }
 
   void _loadUI() async {
-    Navigator.of(context).pushReplacementNamed('/homePage');
+    if (await FirebaseAuth.instance.currentUser() != null) {
+      Navigator.of(context).pushReplacementNamed(HomePage.routeName);
+    } else 
+    Navigator.of(context).pushReplacementNamed(LoginPage.routeName);
   }
 
   @override
@@ -59,8 +67,8 @@ class _SplashScreenState extends State<SplashScreen> {
     return Container(
       decoration: BoxDecoration(
         image: DecorationImage(
-          image: AssetImage('assets/images/splash.jpg'),
-          fit: BoxFit.scaleDown,
+          image: AssetImage('assets/images/splash.png'),
+          fit: BoxFit.cover,
         ),
       ),
     );
