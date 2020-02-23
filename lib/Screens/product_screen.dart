@@ -131,7 +131,6 @@ class _ProductScreenState extends State<ProductScreen> {
     return res.round();
   }
 
-  int _productCount = 0;
 
   @override
   Widget build(BuildContext context) {

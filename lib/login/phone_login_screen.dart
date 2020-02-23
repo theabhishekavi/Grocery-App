@@ -78,7 +78,7 @@ class _PhoneLoginState extends State<PhoneLogin> {
     };
 
     await FirebaseAuth.instance.verifyPhoneNumber(
-      phoneNumber: _phonecontroller.text,
+      phoneNumber: '+91${_phonecontroller.text}',
       verificationCompleted: verificationSuccess,
       verificationFailed: verificationFailed,
       codeSent: smsCodeSent,

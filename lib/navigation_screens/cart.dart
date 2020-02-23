@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:shop/location/pick_address.dart';
 import 'package:shop/models/cart_items.dart';
+import '../location/pick_address.dart';
 
 class CartPage extends StatefulWidget {
   @override
@@ -55,7 +57,9 @@ class _CartPageState extends State<CartPage> {
         actions: <Widget>[
           FlatButton(
             color: Colors.grey[700],
-            onPressed: () {},
+            onPressed: () {
+              Navigator.of(context).pushNamed(PickAddress.routeName);
+            },
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[

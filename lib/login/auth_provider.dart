@@ -38,7 +38,7 @@ class AuthProvider {
     }
   }
 
-  Future<bool> signOutWithGoogle() async {
+  Future<void> signOutWithGoogle() async {
     GoogleSignIn _googleSignIn = GoogleSignIn();
     await _googleSignIn.disconnect();
     await _googleSignIn.signOut();
