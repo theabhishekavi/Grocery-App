@@ -5,6 +5,7 @@ class ProductModel {
   final int productSp;
   final int productAvailability;
   final String productQuantity;
+  bool productIsFav ;
   int productCountOrdered;
 
   ProductModel({
@@ -14,6 +15,7 @@ class ProductModel {
     this.productImage,
     this.productAvailability,
     this.productSp,
+    this.productIsFav,
     this.productCountOrdered
   });
 }

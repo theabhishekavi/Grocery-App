@@ -94,13 +94,12 @@ class CategoriesPage extends StatelessWidget {
     ),
   ];
 
-  void passData(BuildContext ctx, String catType, String catName) {
+  void passData(BuildContext ctx, String catType) {
     Navigator.of(ctx).push(
       MaterialPageRoute(
         builder: (_) {
-          return ProductScreen(
+          return ProductScreen.fromType(
             categoryType: catType,
-            categoryName: catName,
           );
         },
       ),
@@ -119,106 +118,139 @@ class CategoriesPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text(
-                categoriesList[index].categoryType,
-                style: TextStyle(fontSize: 17),
-              ),
-              GridView(
-                physics: ScrollPhysics(),
-                padding: EdgeInsets.only(top: 10),
-                shrinkWrap: true,
-                scrollDirection: Axis.vertical,
-                children: <Widget>[
-                  Card(
-                    elevation: 5.0,
-                    child: InkWell(
-                      onTap: () => passData(
-                          context,
+              InkWell(
+                onTap: () => passData(
+                  context,
+                  categoriesList[index].categoryType,
+                ),
+                child: Container(
+                  color: Colors.grey[100],
+                  height: 200,
+                  width: double.infinity,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: <Widget>[
+                        Text(
                           categoriesList[index].categoryType,
-                          categoriesList[index].categoryName1),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: <Widget>[
-                          Image.network(categoriesList[index].categoryImage1,),
-                          Text(
-                            categoriesList[index].categoryName1,
-                            style: TextStyle(fontSize: 14),
-                            textAlign: TextAlign.center,
-                          ),
-                          SizedBox(height: 2,),
-                        ],
-                      ),
+                          style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          '${categoriesList[index].categoryName1} ${categoriesList[index].categoryName2} \n ${categoriesList[index].categoryName3} ${categoriesList[index].categoryName4}',
+                          textAlign: TextAlign.center,
+                           style: TextStyle(fontSize: 14),
+                        )
+                      ],
                     ),
                   ),
-                  Card(
-                    elevation: 5.0,
-                    child: InkWell(
-                      onTap: () => passData(
-                          context,
-                          categoriesList[index].categoryType,
-                          categoriesList[index].categoryName2),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: <Widget>[
-                          Image.network(categoriesList[index].categoryImage1),
-                          Text(
-                            categoriesList[index].categoryName2,
-                            style: TextStyle(fontSize: 14),
-                            textAlign: TextAlign.center,
-                          ),
-                          SizedBox(height: 2,),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Card(
-                    elevation: 5.0,
-                    child: InkWell(
-                      onTap: () => passData(
-                          context,
-                          categoriesList[index].categoryType,
-                          categoriesList[index].categoryName3),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: <Widget>[
-                          Image.network(categoriesList[index].categoryImage1),
-                          Text(
-                            categoriesList[index].categoryName3,
-                            style: TextStyle(fontSize: 14),
-                            textAlign: TextAlign.center,
-                          ),
-                          SizedBox(height: 2,),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Card(
-                    elevation: 5.0,
-                    child: InkWell(
-                      onTap: () => passData(
-                          context,
-                          categoriesList[index].categoryType,
-                          categoriesList[index].categoryName4),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: <Widget>[
-                          Image.network(categoriesList[index].categoryImage1),
-                          Text(
-                            categoriesList[index].categoryName4,
-                            style: TextStyle(fontSize: 14),
-                            textAlign: TextAlign.center,
-                          ),
-                          SizedBox(height: 2,),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 1,
                 ),
               ),
+              // GridView(
+              //   physics: ScrollPhysics(),
+              //   padding: EdgeInsets.only(top: 10),
+              //   shrinkWrap: true,
+              //   scrollDirection: Axis.vertical,
+              //   children: <Widget>[
+              //     Card(
+              //       elevation: 5.0,
+              //       child: InkWell(
+              //         onTap: () => passData(
+              //             context,
+              //             categoriesList[index].categoryType,
+              //             categoriesList[index].categoryName1),
+              //         child: Column(
+              //           mainAxisAlignment: MainAxisAlignment.spaceAround,
+              //           children: <Widget>[
+              //             Image.network(
+              //               categoriesList[index].categoryImage1,
+              //             ),
+              //             Text(
+              //               categoriesList[index].categoryName1,
+              //               style: TextStyle(fontSize: 14),
+              //               textAlign: TextAlign.center,
+              //             ),
+              //             SizedBox(
+              //               height: 2,
+              //             ),
+              //           ],
+              //         ),
+              //       ),
+              //     ),
+              //     Card(
+              //       elevation: 5.0,
+              //       child: InkWell(
+              //         onTap: () => passData(
+              //             context,
+              //             categoriesList[index].categoryType,
+              //             categoriesList[index].categoryName2),
+              //         child: Column(
+              //           mainAxisAlignment: MainAxisAlignment.spaceAround,
+              //           children: <Widget>[
+              //             Image.network(categoriesList[index].categoryImage1),
+              //             Text(
+              //               categoriesList[index].categoryName2,
+              //               style: TextStyle(fontSize: 14),
+              //               textAlign: TextAlign.center,
+              //             ),
+              //             SizedBox(
+              //               height: 2,
+              //             ),
+              //           ],
+              //         ),
+              //       ),
+              //     ),
+              //     Card(
+              //       elevation: 5.0,
+              //       child: InkWell(
+              //         onTap: () => passData(
+              //             context,
+              //             categoriesList[index].categoryType,
+              //             categoriesList[index].categoryName3),
+              //         child: Column(
+              //           mainAxisAlignment: MainAxisAlignment.spaceAround,
+              //           children: <Widget>[
+              //             Image.network(categoriesList[index].categoryImage1),
+              //             Text(
+              //               categoriesList[index].categoryName3,
+              //               style: TextStyle(fontSize: 14),
+              //               textAlign: TextAlign.center,
+              //             ),
+              //             SizedBox(
+              //               height: 2,
+              //             ),
+              //           ],
+              //         ),
+              //       ),
+              //     ),
+              //     Card(
+              //       elevation: 5.0,
+              //       child: InkWell(
+              //         onTap: () => passData(
+              //             context,
+              //             categoriesList[index].categoryType,
+              //             categoriesList[index].categoryName4),
+              //         child: Column(
+              //           mainAxisAlignment: MainAxisAlignment.spaceAround,
+              //           children: <Widget>[
+              //             Image.network(categoriesList[index].categoryImage1),
+              //             Text(
+              //               categoriesList[index].categoryName4,
+              //               style: TextStyle(fontSize: 14),
+              //               textAlign: TextAlign.center,
+              //             ),
+              //             SizedBox(
+              //               height: 2,
+              //             ),
+              //           ],
+              //         ),
+              //       ),
+              //     ),
+              //   ],
+              //   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              //     crossAxisCount: 2,
+              //     childAspectRatio: 1,
+              //   ),
+              // ),
             ],
           ),
         );

@@ -2,40 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:shop/location/pick_address.dart';
 import 'package:shop/models/cart_items.dart';
 import '../location/pick_address.dart';
+import '../database/cartTable_helper.dart';
 
 class CartPage extends StatefulWidget {
+  static const routeName = "/cartPageRoute";
   @override
   _CartPageState createState() => _CartPageState();
 }
 
 class _CartPageState extends State<CartPage> {
-  static List<CartItems> cartItemList = [
-    CartItems(
-        pImage: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
-        pCountOrdered: 2,
-        pMrp: 30,
-        pSp: 27,
-        pName: 'Bread',
-        pQuantity: '1',
-        pCategoryName: 'Bread Jam'),
-    CartItems(
-        pImage: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
-        pCountOrdered: 1,
-        pMrp: 30,
-        pSp: 27,
-        pName: 'Badam',
-        pQuantity: '200gm',
-        pCategoryName: 'Dry Fruits'),
-    CartItems(
-        pImage: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
-        pCountOrdered: 1,
-        pMrp: 300,
-        pSp: 270,
-        pName: 'Daaru',
-        pQuantity: '250ml',
-        pCategoryName: 'Whisky'),
-        
-  ];
+  CartTableHelper databaseHelper = CartTableHelper();
+  double _checkoutPrice = 0.0;
+  List<CartItems> cartItemList = [];
+
   static double calPrice(List<CartItems> cartItemList) {
     double _sum = 0.0;
     for (int i = 0; i < cartItemList.length; i++) {
@@ -44,7 +23,35 @@ class _CartPageState extends State<CartPage> {
     return _sum;
   }
 
-  double _checkoutPrice = calPrice(cartItemList);
+  Future<void> getCartItems() async {
+    List<Map<String, dynamic>> list = await databaseHelper.getCartMapList();
+    for (int i = 0; i < list.length; i++) {
+      Map<String, dynamic> map = list[i];
+      CartItems x = new CartItems(
+        pName: map['pName'],
+        pCategoryName: map['pCategoryName'],
+        pCountOrdered: int.parse(map['pCountOrdered']),
+        pImage: map['pImage'],
+        pMrp: int.parse(map['pMrp']),
+        pQuantity: map['pQuantity'],
+        pSp: int.parse(map['pSp']),
+        pAvailability: int.parse(map['pAvailability']),
+      );
+      cartItemList.add(x);
+    }
+  }
+
+  @override
+  initState() {
+    super.initState();
+    getCartItems().then((_) {
+      setState(() {
+        cartItemList = cartItemList;
+        _checkoutPrice = calPrice(cartItemList);
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -56,7 +63,7 @@ class _CartPageState extends State<CartPage> {
         backgroundColor: Colors.grey[300],
         actions: <Widget>[
           FlatButton(
-            color: Colors.grey[700],
+            color: Colors.grey[400],
             onPressed: () {
               Navigator.of(context).pushNamed(PickAddress.routeName);
             },
@@ -69,7 +76,7 @@ class _CartPageState extends State<CartPage> {
                 ),
                 Text(
                   'Rs $_checkoutPrice',
-                  style: TextStyle(fontSize: 10),
+                  style: TextStyle(fontSize: 12),
                 ),
               ],
             ),
@@ -84,6 +91,7 @@ class _CartPageState extends State<CartPage> {
             child: Column(
               children: <Widget>[
                 ListTile(
+
                   leading: Container(
                     height: 40,
                     width: 40,
@@ -114,17 +122,47 @@ class _CartPageState extends State<CartPage> {
                       Container(
                         decoration: BoxDecoration(
                           shape: BoxShape.rectangle,
-                          border: Border.all(color: Theme.of(context).accentColor, width: 1.0),
+                          border: Border.all(
+                              color: Theme.of(context).accentColor, width: 1.0),
                         ),
-                        width: 70,
-                        height: 24,
+                        width: 75,
+                        height: 20,
                         child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
                             InkWell(
-                              onTap: () {},
+                              onTap: () {
+                                if (cartItemList[index].pCountOrdered == 1) {
+                                  _delete(cartItemList[index].pName +
+                                      cartItemList[index].pQuantity);
+                                  setState(() {
+                                    cartItemList.removeAt(index);
+                                    _checkoutPrice = calPrice(cartItemList);
+                                  });
+                                } else if (cartItemList[index].pCountOrdered >
+                                    1) {
+                                  CartItems x = new CartItems(
+                                    pImage: cartItemList[index].pImage,
+                                    pName: cartItemList[index].pName,
+                                    pCountOrdered:
+                                        cartItemList[index].pCountOrdered - 1,
+                                    pCategoryName:
+                                        cartItemList[index].pCategoryName,
+                                    pMrp: cartItemList[index].pMrp,
+                                    pSp: cartItemList[index].pSp,
+                                    pQuantity: cartItemList[index].pQuantity,
+                                    pAvailability: cartItemList[index].pAvailability,
+                                  );
+                                  _update(x);
+                                  setState(() {
+                                    cartItemList[index].pCountOrdered--;
+                                    _checkoutPrice = calPrice(cartItemList);
+                                  });
+                                }
+                              },
                               child: Icon(
                                 Icons.remove,
-                                size: 20,
+                                size: 18,
                                 color: Theme.of(context).accentColor,
                               ),
                             ),
@@ -136,7 +174,8 @@ class _CartPageState extends State<CartPage> {
                             Text(
                               '${cartItemList[index].pCountOrdered}',
                               style: TextStyle(
-                                  fontSize: 13, ),
+                                fontSize: 13,
+                              ),
                             ),
                             VerticalDivider(
                               width: 10,
@@ -144,10 +183,30 @@ class _CartPageState extends State<CartPage> {
                               color: Theme.of(context).accentColor,
                             ),
                             InkWell(
-                              onTap: () {},
+                              onTap: () {
+                                if (cartItemList[index].pCountOrdered < 5) {
+                                  CartItems x = new CartItems(
+                                    pImage: cartItemList[index].pImage,
+                                    pName: cartItemList[index].pName,
+                                    pCountOrdered:
+                                        cartItemList[index].pCountOrdered + 1,
+                                    pCategoryName:
+                                        cartItemList[index].pCategoryName,
+                                    pMrp: cartItemList[index].pMrp,
+                                    pSp: cartItemList[index].pSp,
+                                    pQuantity: cartItemList[index].pQuantity,
+                                    pAvailability: cartItemList[index].pAvailability,
+                                  );
+                                  _update(x);
+                                  setState(() {
+                                    cartItemList[index].pCountOrdered++;
+                                    _checkoutPrice = calPrice(cartItemList);
+                                  });
+                                }
+                              },
                               child: Icon(
                                 Icons.add,
-                                size: 20,
+                                size: 18,
                                 color: Theme.of(context).accentColor,
                               ),
                             ),
@@ -164,5 +223,17 @@ class _CartPageState extends State<CartPage> {
         },
       ),
     );
+  }
+
+  Future<void> _update(CartItems cartItems) async {
+    int result = await databaseHelper.updateCart(cartItems);
+
+    print('$result update');
+  }
+
+  Future<void> _delete(String id) async {
+    int result = await databaseHelper.deleteCartItem(id);
+
+    print('$result delete');
   }
 }

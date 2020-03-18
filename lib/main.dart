@@ -2,9 +2,12 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:shop/Screens/favourite_screen.dart';
 import 'package:shop/Screens/product_screen.dart';
+import 'package:shop/Screens/profile_screen.dart';
 import 'package:shop/location/pick_address.dart';
 import 'package:shop/login/login_screen.dart';
+import 'package:shop/navigation_screens/cart.dart';
 import 'package:shop/payment/payment_page.dart';
 import './login/phone_login_screen.dart';
 import './home_page.dart';
@@ -32,6 +35,9 @@ class MyApp extends StatelessWidget {
         PhoneLogin.routeName: (BuildContext context) => PhoneLogin(),
         PickAddress.routeName: (BuildContext context) => PickAddress(),
         PaymentPage.routeName:(BuildContext context) => PaymentPage(),
+        CartPage.routeName:(BuildContext context) => CartPage(),
+        FavouritePage.routeName:(BuildContext context) => FavouritePage(),
+        ProfileScreen.routeName:(BuildContext context) => ProfileScreen(),
       },
     );
   }

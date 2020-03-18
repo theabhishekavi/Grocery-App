@@ -95,7 +95,7 @@ class _HomePageState extends State<HomePage> {
             onPressed: () {},
           ),
           IconButton(
-            icon: Icon(MdiIcons.logout),
+            icon: Icon(Icons.notifications),
             onPressed: () {
               AuthProvider().signOutWithGoogle();
               Navigator.of(context).pushReplacementNamed(LoginPage.routeName);
