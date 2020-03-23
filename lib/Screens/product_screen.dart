@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shop/Screens/product_detail_screen.dart';
 import 'package:shop/database/favourite_helper.dart';
 import 'package:shop/models/cart_items.dart';
 import 'package:shop/models/favourite_items.dart';
@@ -30,7 +31,7 @@ class _ProductScreenState extends State<ProductScreen> {
         productSp: 27,
         productCountOrdered: 0,
         productIsFav: false,
-        productMrp: 30,
+        productMrp: 27,
         productQuantity: '1'),
     ProductModel(
         productName: 'Jam',
@@ -168,232 +169,270 @@ class _ProductScreenState extends State<ProductScreen> {
                     padding: const EdgeInsets.all(10.0),
                     child: Column(
                       children: <Widget>[
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            Row(
-                              children: <Widget>[
-                                SizedBox(
-                                  width: 60,
-                                  height: 60,
-                                  child: Image.network(
-                                    productList[index].productImage,
-                                    fit: BoxFit.cover,
+                        Padding(
+                          padding: const EdgeInsets.only(right: 15.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              InkWell(
+                                onTap: () {
+                                  Navigator.of(context)
+                                      .push(MaterialPageRoute(builder: (_) {
+                                    return ProductDetailScreen(
+                                      productModel: productList[index],
+                                      productList: productList,
+                                    );
+                                  }));
+                                },
+                                child: Row(
+                                  children: <Widget>[
+                                    SizedBox(
+                                      width: 60,
+                                      height: 60,
+                                      child: Image.network(
+                                        productList[index].productImage,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: 10,
+                                    ),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: <Widget>[
+                                        Text(productList[index].productName),
+                                        SizedBox(
+                                          height: 8,
+                                        ),
+                                        Row(
+                                          children: <Widget>[
+                                            Text(
+                                                'Rs ${productList[index].productSp}'),
+                                            SizedBox(
+                                              width: 5,
+                                            ),
+                                            (productList[index].productMrp !=
+                                                    productList[index]
+                                                        .productSp)
+                                                ? Row(
+                                                    children: <Widget>[
+                                                      Text(
+                                                        '${productList[index].productMrp}',
+                                                        style: TextStyle(
+                                                            color: Colors
+                                                                .grey[700],
+                                                            decoration:
+                                                                TextDecoration
+                                                                    .lineThrough),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 5,
+                                                      ),
+                                                      Text(
+                                                        '${discountPer(productList[index].productMrp, productList[index].productSp)}% off',
+                                                        style: TextStyle(
+                                                            color:
+                                                                Colors.green),
+                                                      ),
+                                                    ],
+                                                  )
+                                                : Padding(
+                                                    padding:
+                                                        EdgeInsets.all(0.0),
+                                                  ),
+                                          ],
+                                        ),
+                                        // Text(
+                                        //     'Quantity : ${productList[index].productQuantity}'),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              InkWell(
+                                onTap: () {
+                                  setState(() {
+                                    favCheck = true;
+                                    if (productList[index].productIsFav) {
+                                      _deleteFav(productList[index]
+                                              .productName +
+                                          widget.categoryType +
+                                          productList[index].productQuantity);
+                                    } else {
+                                      _insertFav(FavouriteItems(
+                                        categoryType: widget.categoryType,
+                                        productName:
+                                            productList[index].productName,
+                                        productQuantity:
+                                            productList[index].productQuantity,
+                                        productAvailability: productList[index]
+                                            .productAvailability,
+                                        productImage:
+                                            productList[index].productImage,
+                                        productMrp:
+                                            productList[index].productMrp,
+                                        productSp: productList[index].productSp,
+                                      ));
+                                    }
+                                    productList[index].productIsFav =
+                                        !productList[index].productIsFav;
+                                  });
+                                },
+                                child: Icon(
+                                  (productList[index].productIsFav)
+                                      ? Icons.favorite
+                                      : Icons.favorite_border,
+                                  color: Theme.of(context).accentColor,
+                                ),
+                              ),
+                              Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.rectangle,
+                                  border: Border.all(
+                                    color: Theme.of(context).accentColor,
+                                    width: 1.0,
                                   ),
                                 ),
-                                SizedBox(
-                                  width: 10,
-                                ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                width: 80,
+                                height: 35,
+                                child: Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceAround,
                                   children: <Widget>[
-                                    Text(productList[index].productName),
-                                    Row(
-                                      children: <Widget>[
-                                        Text(
-                                            'Rs ${productList[index].productSp}'),
-                                        SizedBox(
-                                          width: 5,
-                                        ),
-                                        Text(
-                                          '${productList[index].productMrp}',
-                                          style: TextStyle(
-                                              color: Colors.grey[700],
-                                              decoration:
-                                                  TextDecoration.lineThrough),
-                                        ),
-                                        SizedBox(
-                                          width: 5,
-                                        ),
-                                        Text(
-                                          '${discountPer(productList[index].productMrp, productList[index].productSp)}% off',
-                                          style: TextStyle(
-                                              color: Colors.lightGreen[300]),
-                                        ),
-                                      ],
+                                    InkWell(
+                                      onTap: () {
+                                        if (productList[index]
+                                                .productCountOrdered >
+                                            0) {
+                                          CartItems x = new CartItems(
+                                            pImage:
+                                                productList[index].productImage,
+                                            pName: productList[index].productName,
+                                            pCountOrdered: productList[index]
+                                                    .productCountOrdered -
+                                                1,
+                                            pCategoryName:
+                                                (widget.categoryName != "")
+                                                    ? widget.categoryName
+                                                    : widget.categoryType,
+                                            pMrp: productList[index].productMrp,
+                                            pSp: productList[index].productSp,
+                                            pQuantity: productList[index]
+                                                .productQuantity,
+                                            pAvailability: productList[index]
+                                                .productAvailability,
+                                          );
+                                          if (productList[index]
+                                                  .productCountOrdered ==
+                                              1) {
+                                            _deleteCart(productList[index]
+                                                        .productName +
+                                                    productList[index]
+                                                        .productQuantity)
+                                                .then((_) {
+                                              setState(() {
+                                                check = true;
+                                                productList[index]
+                                                    .productCountOrdered--;
+                                              });
+                                            });
+                                          } else {
+                                            _updateCart(x).then((_) {
+                                              setState(() {
+                                                check = true;
+                                                productList[index]
+                                                    .productCountOrdered--;
+                                              });
+                                            });
+                                          }
+                                        }
+                                      },
+                                      child: Icon(
+                                        Icons.remove,
+                                        size: 18,
+                                        color: Theme.of(context).accentColor,
+                                      ),
+                                    ),
+                                    VerticalDivider(
+                                      width: 10,
+                                      thickness: 1,
+                                      color: Theme.of(context).accentColor,
                                     ),
                                     Text(
-                                        'Quantity : ${productList[index].productQuantity}'),
+                                      '${productList[index].productCountOrdered}',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                    VerticalDivider(
+                                      width: 10,
+                                      thickness: 1,
+                                      color: Theme.of(context).accentColor,
+                                    ),
+                                    InkWell(
+                                      onTap: () {
+                                        if (productList[index]
+                                                .productCountOrdered <
+                                            5) {
+                                          CartItems x = new CartItems(
+                                            pImage:
+                                                productList[index].productImage,
+                                            pName: productList[index].productName,
+                                            pCountOrdered: productList[index]
+                                                    .productCountOrdered +
+                                                1,
+                                            pCategoryName:
+                                                (widget.categoryName != "")
+                                                    ? widget.categoryName
+                                                    : widget.categoryType,
+                                            pMrp: productList[index].productMrp,
+                                            pSp: productList[index].productSp,
+                                            pQuantity: productList[index]
+                                                .productQuantity,
+                                            pAvailability: productList[index]
+                                                .productAvailability,
+                                          );
+                                          if (productList[index]
+                                                  .productCountOrdered ==
+                                              0) {
+                                            _insertCart(x).then((_) {
+                                              setState(() {
+                                                check = true;
+                                                productList[index]
+                                                        .productCountOrdered =
+                                                    productList[index]
+                                                            .productCountOrdered +
+                                                        1;
+                                              });
+                                            });
+                                          } else {
+                                            _updateCart(x).then((_) {
+                                              setState(() {
+                                                check = true;
+                                                productList[index]
+                                                        .productCountOrdered =
+                                                    productList[index]
+                                                            .productCountOrdered +
+                                                        1;
+                                              });
+                                            });
+                                          }
+                                        }
+                                      },
+                                      child: Icon(
+                                        Icons.add,
+                                        size: 18,
+                                        color: Theme.of(context).accentColor,
+                                      ),
+                                    ),
                                   ],
                                 ),
-                              ],
-                            ),
-                            InkWell(
-                              onTap: () {
-                                setState(() {
-                                  favCheck = true;
-                                  if (productList[index].productIsFav) {
-                                    _deleteFav(productList[index].productName +
-                                        widget.categoryType +
-                                        productList[index].productQuantity);
-                                  } else {
-                                    _insertFav(FavouriteItems(
-                                      categoryType: widget.categoryType,
-                                      productName:
-                                          productList[index].productName,
-                                      productQuantity:
-                                          productList[index].productQuantity,
-                                      productAvailability: productList[index].productAvailability,
-                                      productImage: productList[index].productImage,
-                                      productMrp: productList[index].productMrp,
-                                      productSp: productList[index].productSp,
-                                    ));
-                                  }
-                                  productList[index].productIsFav =
-                                      !productList[index].productIsFav;
-                                });
-                              },
-                              child: Icon(
-                                (productList[index].productIsFav)
-                                    ? Icons.favorite
-                                    : Icons.favorite_border,
-                                color: Theme.of(context).accentColor,
                               ),
-                            ),
-                            Container(
-                              decoration: BoxDecoration(
-                                shape: BoxShape.rectangle,
-                                border: Border.all(
-                                  color: Theme.of(context).accentColor,
-                                  width: 1.0,
-                                ),
-                              ),
-                              width: 80,
-                              height: 35,
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceAround,
-                                children: <Widget>[
-                                  InkWell(
-                                    onTap: () {
-                                      if (productList[index]
-                                              .productCountOrdered >
-                                          0) {
-                                        CartItems x = new CartItems(
-                                          pImage:
-                                              productList[index].productImage,
-                                          pName: productList[index].productName,
-                                          pCountOrdered: productList[index]
-                                                  .productCountOrdered -
-                                              1,
-                                          pCategoryName:
-                                              (widget.categoryName != "")
-                                                  ? widget.categoryName
-                                                  : widget.categoryType,
-                                          pMrp: productList[index].productMrp,
-                                          pSp: productList[index].productSp,
-                                          pQuantity: productList[index]
-                                              .productQuantity,
-                                          pAvailability: productList[index].productAvailability,
-                                        );
-                                        if (productList[index]
-                                                .productCountOrdered ==
-                                            1) {
-                                          _deleteCart(productList[index]
-                                                      .productName +
-                                                  productList[index]
-                                                      .productQuantity)
-                                              .then((_) {
-                                            setState(() {
-                                              check = true;
-                                              productList[index]
-                                                  .productCountOrdered--;
-                                            });
-                                          });
-                                        } else {
-                                          _updateCart(x).then((_) {
-                                            setState(() {
-                                              check = true;
-                                              productList[index]
-                                                  .productCountOrdered--;
-                                            });
-                                          });
-                                        }
-                                      }
-                                    },
-                                    child: Icon(
-                                      Icons.remove,
-                                      size: 18,
-                                      color: Theme.of(context).accentColor,
-                                    ),
-                                  ),
-                                  VerticalDivider(
-                                    width: 10,
-                                    thickness: 1,
-                                    color: Theme.of(context).accentColor,
-                                  ),
-                                  Text(
-                                    '${productList[index].productCountOrdered}',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                  VerticalDivider(
-                                    width: 10,
-                                    thickness: 1,
-                                    color: Theme.of(context).accentColor,
-                                  ),
-                                  InkWell(
-                                    onTap: () {
-                                      if (productList[index]
-                                              .productCountOrdered <
-                                          5) {
-                                        CartItems x = new CartItems(
-                                          pImage:
-                                              productList[index].productImage,
-                                          pName: productList[index].productName,
-                                          pCountOrdered: productList[index]
-                                                  .productCountOrdered +
-                                              1,
-                                          pCategoryName:
-                                              (widget.categoryName != "")
-                                                  ? widget.categoryName
-                                                  : widget.categoryType,
-                                          pMrp: productList[index].productMrp,
-                                          pSp: productList[index].productSp,
-                                          pQuantity: productList[index]
-                                              .productQuantity,
-                                          pAvailability: productList[index].productAvailability,
-                                        );
-                                        if (productList[index]
-                                                .productCountOrdered ==
-                                            0) {
-                                          _insertCart(x).then((_) {
-                                            setState(() {
-                                              check = true;
-                                              productList[index]
-                                                      .productCountOrdered =
-                                                  productList[index]
-                                                          .productCountOrdered +
-                                                      1;
-                                            });
-                                          });
-                                        } else {
-                                          _updateCart(x).then((_) {
-                                            setState(() {
-                                              check = true;
-                                              productList[index]
-                                                      .productCountOrdered =
-                                                  productList[index]
-                                                          .productCountOrdered +
-                                                      1;
-                                            });
-                                          });
-                                        }
-                                      }
-                                    },
-                                    child: Icon(
-                                      Icons.add,
-                                      size: 18,
-                                      color: Theme.of(context).accentColor,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                         Divider(),
                       ],
@@ -438,11 +477,13 @@ class _ProductScreenState extends State<ProductScreen> {
       }
     }
   }
-  void getFavouriteItemsFromDatabase(int index, bool favCheck){
-    if(!favCheck){
+
+  void getFavouriteItemsFromDatabase(int index, bool favCheck) {
+    if (!favCheck) {
       for (int j = 0; j < favItemList.length; j++) {
         if (favItemList[j].productName == productList[index].productName &&
-            favItemList[j].productQuantity == productList[index].productQuantity) {
+            favItemList[j].productQuantity ==
+                productList[index].productQuantity) {
           productList[index].productIsFav = true;
         }
       }

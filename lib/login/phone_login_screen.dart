@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import '../home_page.dart';
 
@@ -13,6 +15,7 @@ class PhoneLogin extends StatefulWidget {
 
 class _PhoneLoginState extends State<PhoneLogin> {
   TextEditingController _phonecontroller;
+  bool _loadState = false;
 
   @override
   void initState() {
@@ -22,49 +25,98 @@ class _PhoneLoginState extends State<PhoneLogin> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Enter your phone number'),
-      ),
-      body: Form(
-        child: Column(
-          children: <Widget>[
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
-              child: Container(
-                //decorate here
-                child: TextField(
-                  controller: _phonecontroller,
-                  decoration: InputDecoration(
-                    labelText: 'Phone Number',
-                    prefixIcon: Icon(Icons.phone),
-                    contentPadding: EdgeInsets.all(10.0),
-                  ),
-                  textInputAction: TextInputAction.done,
-                  keyboardType: TextInputType.phone,
+    Widget loadingIndicator = (_loadState)
+        ? new Container(
+            width: 120,
+            height: 120,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Center(
+                child: CircularProgressIndicator(
+                  valueColor: new AlwaysStoppedAnimation<Color>(
+                      Theme.of(context).primaryColor),
                 ),
               ),
             ),
-            RaisedButton(
-              onPressed: verifyNumber,
-              child: Text('Verify phone number'),
-            ),
-          ],
-        ),
+          )
+        : new Container();
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Phone Number Verification'),
+      ),
+      body: Stack(
+        children: <Widget>[
+          Column(
+            children: <Widget>[
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 5.0),
+                child: Container(
+                  //decorate here
+                  decoration: BoxDecoration(
+                      shape: BoxShape.rectangle,
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(20.0),
+                          topRight: Radius.circular(20.0),
+                          bottomLeft: Radius.circular(20.0)),
+                      border: Border.all(color: Colors.grey)),
+                  child: TextField(
+                    controller: _phonecontroller,
+                    decoration: InputDecoration(
+                      labelText: 'Phone Number',
+                      prefixIcon: Icon(Icons.phone),
+                      contentPadding: EdgeInsets.all(0.0),
+                      border: InputBorder.none,
+                    ),
+                    textInputAction: TextInputAction.done,
+                    keyboardType: TextInputType.phone,
+                    maxLength: 10,
+                  ),
+                ),
+              ),
+              RaisedButton(
+                onPressed: () async {
+                  SystemChannels.textInput.invokeMethod('TextInput.hide');
+                  if (_phonecontroller.text.length != 10) {
+                    Fluttertoast.showToast(
+                        msg: "Enter a valid Ph.No without any +91/0");
+                  } else {
+                    setState(() {
+                      
+                      _loadState = true;
+                    });
+                    verifyNumber();
+                  }
+                },
+                child: Text('Verify phone number'),
+              ),
+            ],
+          ),
+          new Align(
+            child: loadingIndicator,
+            alignment: FractionalOffset.bottomCenter,
+          ),
+        ],
       ),
     );
   }
 
   Future<void> verifyNumber() async {
-    print('${_phonecontroller.text} is');
     final PhoneCodeAutoRetrievalTimeout autoRetrievalTimeout = (String verId) {
       PhoneLogin.verificationId = verId;
     };
 
     final PhoneVerificationCompleted verificationSuccess =
         (AuthCredential credential) {
-      print('verified');
-      Navigator.of(context).pushReplacementNamed(HomePage.routeName);
+      FirebaseAuth.instance.signInWithCredential(credential).then((user) {
+        if (user != null){
+          Fluttertoast.showToast(msg: 'Phone Log In Successful');
+          Navigator.of(context).pushReplacementNamed(HomePage.routeName);
+        }
+        else{
+          Fluttertoast.showToast(msg: 'Log In Failed');
+        }
+          
+      });
     };
 
     final PhoneVerificationFailed verificationFailed =
@@ -88,57 +140,91 @@ class _PhoneLoginState extends State<PhoneLogin> {
   }
 
   Future<bool> smsCodeDialog(BuildContext context) {
+    setState(() {
+      _loadState = false;
+    });
     return showDialog(
         context: context,
-        barrierDismissible: false,
         builder: (BuildContext context) {
           return new AlertDialog(
-            title: Text('Enter the Sms Code'),
-            content: TextField(
-              keyboardType: TextInputType.number,
-              obscureText: true,
-              onChanged: (value) {
-                PhoneLogin.smsCode = value;
-              },
+            title: Center(child: Text('Sms Code Sent Successfully!')),
+            content: Padding(
+              padding: const EdgeInsets.only(left: 15.0, right: 15.0),
+              child: TextField(
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  hintText: 'Enter the Code',
+                ),
+                obscureText: true,
+                onChanged: (value) {
+                  PhoneLogin.smsCode = value;
+                },
+              ),
             ),
             contentPadding: EdgeInsets.all(10.0),
             actions: <Widget>[
               RaisedButton(
-                color: Colors.teal,
-                onPressed: () {
-                  FirebaseAuth.instance.currentUser().then((user) {
-                    if (user != null) {
-                      Navigator.of(context).pop();
-                      Navigator.of(context)
-                          .pushReplacementNamed(HomePage.routeName);
-                    } else {
-                      Navigator.of(context).pop();
-                      signIn(context);
+                color: Theme.of(context).primaryColor,
+                onPressed: () async {
+                  SystemChannels.textInput.invokeMethod('TextInput.hide');
+                  setState(() {
+                    _loadState = true;
+                  });
+                  signIn(context).then((val) {
+                    Navigator.of(context).pop();
+                    if(val){
+                      Fluttertoast.showToast(msg: 'Phone Log In Successful');
+                       Navigator.of(context).pushReplacementNamed(HomePage.routeName);
+                    }
+                    else{
+                      Fluttertoast.showToast(msg: 'Log In Failed');
+                      setState(() {
+                        _loadState = false;
+                      });
                     }
                   });
+                  // FirebaseAuth.instance.currentUser().then((user) {
+                  //   if (user != null) {
+                  //     print('not null ran');
+                  //     Navigator.of(context).pop();
+                  //     Navigator.of(context)
+                  //         .pushReplacementNamed(HomePage.routeName);
+                  //   } else {
+                  //     print('null ran');
+                  //     Navigator.of(context).pop();
+                  //     signIn(context);
+                  //   }
+                  // });
                 },
                 child: Text(
                   'Done',
                   style: TextStyle(color: Colors.white),
                 ),
-              )
+              ),
+              SizedBox(
+                width: 100,
+              ),
             ],
           );
         });
   }
 
-  signIn(BuildContext context) async {
+  Future<bool> signIn(BuildContext context) async {
     try {
       final AuthCredential credential = PhoneAuthProvider.getCredential(
         verificationId: PhoneLogin.verificationId,
         smsCode: PhoneLogin.smsCode,
       );
-      await FirebaseAuth.instance.signInWithCredential(credential).then((user) {
-        if (user != null)
-          Navigator.of(context).pushReplacementNamed(HomePage.routeName);
-      });
+      AuthResult authResult = await FirebaseAuth.instance.signInWithCredential(credential);
+      
+        if (authResult != null) {
+         return true;
+        }
+        else return false;
+      
     } catch (e) {
-      print(e);
+      return false;
+     
     }
   }
 }

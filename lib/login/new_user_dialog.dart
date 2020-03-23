@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import './auth_provider.dart';
 
 class NewUserDialog {
@@ -30,7 +31,7 @@ class NewUserDialog {
                         borderRadius: BorderRadius.circular(10),
                         boxShadow: [
                           BoxShadow(
-                            color: Color.fromRGBO(225, 95, 27, .3),
+                            color: Color.fromRGBO(225, 95, 27, .2),
                             blurRadius: 20,
                             offset: Offset(0, 10),
                           ),
@@ -39,7 +40,7 @@ class NewUserDialog {
                       children: <Widget>[
                         Container(
                           padding:
-                              EdgeInsets.symmetric(vertical: 5, horizontal: 15),
+                              EdgeInsets.symmetric(vertical: 5, horizontal: 5),
                           decoration: BoxDecoration(
                             border: Border(
                               bottom: BorderSide(
@@ -60,7 +61,7 @@ class NewUserDialog {
                         ),
                         Container(
                           padding:
-                              EdgeInsets.symmetric(vertical: 5, horizontal: 15),
+                              EdgeInsets.symmetric(vertical: 5, horizontal: 5),
                           decoration: BoxDecoration(
                             border: Border(
                               bottom: BorderSide(
@@ -82,7 +83,7 @@ class NewUserDialog {
                         ),
                         Container(
                           padding:
-                              EdgeInsets.symmetric(vertical: 5, horizontal: 15),
+                              EdgeInsets.symmetric(vertical: 5, horizontal: 5),
                           decoration: BoxDecoration(
                             border: Border(
                               bottom: BorderSide(
@@ -96,7 +97,7 @@ class NewUserDialog {
                             keyboardType: TextInputType.emailAddress,
                             decoration: InputDecoration(
                               hintText: 'Re-Password',
-                              prefixIcon: Icon(MdiIcons.textboxPassword),
+                              prefixIcon: Icon(Icons.alternate_email),
                               hintStyle: TextStyle(color: Colors.grey),
                               border: InputBorder.none,
                             ),
@@ -115,14 +116,31 @@ class NewUserDialog {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                     RaisedButton(
-                      color: Colors.teal,
+                      color: Theme.of(context).primaryColor,
                       onPressed: () {
-                        if (_passController.text == _rePassController.text)
+                        SystemChannels.textInput.invokeMethod('TextInput.hide');
+                        if(_passController.text==""||_rePassController.text==""|| _emailController.text==""){
+                          Fluttertoast.showToast(msg: 'Enter all the above details');
+                        }
+                        else if(_passController.text != _rePassController.text){
+                          Fluttertoast.showToast(msg: 'Password mismatch');
+                        }
+                        else if (_passController.text == _rePassController.text)
                           AuthProvider().signUpWithEmail(
-                              _emailController.text, _passController.text);
+                              _emailController.text, _passController.text).then((val){
+                                if(val){
+                                  Fluttertoast.showToast(msg: 'Signed Up Successfully!');
+                                  Navigator.of(context).pop();
+                                }
+                                else{
+                                  Fluttertoast.showToast(msg: 'Error in signing up, Please try again!');
+                                  Navigator.of(context).pop();
+                                }
+
+                              });
                       },
                       child: Text(
-                        'Sign Up',
+                        'SIGN UP',
                         style: TextStyle(color: Colors.white),
                         textAlign: TextAlign.center,
                       ),
@@ -143,10 +161,10 @@ class NewUserDialog {
         context: context,
         builder: (ctx) {
           return AlertDialog(
-            title: Text('Password Reset'),
+            title: Text('Reset Password'),
             content: Container(
               width: 400,
-              padding: EdgeInsets.symmetric(vertical: 5, horizontal: 15),
+              padding: EdgeInsets.symmetric(vertical: 5, horizontal: 5),
               decoration: BoxDecoration(
                 border: Border(
                   bottom: BorderSide(
@@ -156,11 +174,11 @@ class NewUserDialog {
               ),
               child: TextField(
                 controller: _forgotPasswordController,
-                obscureText: true,
+               
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
                   hintText: 'Email',
-                  prefixIcon: Icon(MdiIcons.textboxPassword),
+                  prefixIcon: Icon(Icons.email),
                   hintStyle: TextStyle(color: Colors.grey),
                   border: InputBorder.none,
                 ),
@@ -173,22 +191,36 @@ class NewUserDialog {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                     RaisedButton(
-                      color: Colors.teal,
+                      color: Theme.of(context).primaryColor,
                       onPressed: () {
-                        AuthProvider().resetPassword(_forgotPasswordController.text).then((val){
-                          if(val)
-                          Navigator.of(context).pop();
-                        });
+                        if (_forgotPasswordController.text == "") {
+                          Fluttertoast.showToast(msg: "First enter an email id");
+                        } else {
+                          AuthProvider()
+                              .resetPassword(_forgotPasswordController.text)
+                              .then((val) {
+                            if (val) {
+                              Fluttertoast.showToast(msg: "A link has been sent succesfully to ${_forgotPasswordController.text}");
+                              Navigator.of(context).pop();
+                              }
+                              else{
+                                 Fluttertoast.showToast(msg: "Enter a valid email id");
+                              }
+                          });
+                        }
                       },
                       child: Text(
                         'RESET',
                         style: TextStyle(color: Colors.white),
-                        textAlign: TextAlign.center,
+                        // textAlign: TextAlign.center,
                       ),
                     ),
                   ],
                 ),
               ),
+              SizedBox(
+                width: 110,
+              )
             ],
           );
         });

@@ -2,9 +2,13 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:shop/Screens/favourite_screen.dart';
+import 'package:shop/drawer/favourite_screen.dart';
+import 'package:shop/drawer/my_address_screen.dart';
+import 'package:shop/drawer/my_order_screen.dart';
+import 'package:shop/Screens/order_checkout_screen.dart';
+import 'package:shop/Screens/product_detail_screen.dart';
 import 'package:shop/Screens/product_screen.dart';
-import 'package:shop/Screens/profile_screen.dart';
+import 'package:shop/drawer/profile_screen.dart';
 import 'package:shop/location/pick_address.dart';
 import 'package:shop/login/login_screen.dart';
 import 'package:shop/navigation_screens/cart.dart';
@@ -34,10 +38,14 @@ class MyApp extends StatelessWidget {
         LoginPage.routeName: (BuildContext context) => LoginPage(),
         PhoneLogin.routeName: (BuildContext context) => PhoneLogin(),
         PickAddress.routeName: (BuildContext context) => PickAddress(),
-        PaymentPage.routeName:(BuildContext context) => PaymentPage(),
-        CartPage.routeName:(BuildContext context) => CartPage(),
-        FavouritePage.routeName:(BuildContext context) => FavouritePage(),
-        ProfileScreen.routeName:(BuildContext context) => ProfileScreen(),
+        PaymentPage.routeName: (BuildContext context) => PaymentPage(),
+        CartPage.routeName: (BuildContext context) => CartPage(),
+        FavouritePage.routeName: (BuildContext context) => FavouritePage(),
+        ProfileScreen.routeName: (BuildContext context) => ProfileScreen(),
+        ProductDetailScreen.routeName: (BuildContext context) => ProductDetailScreen(),
+        MyOrderScreen.routeName: (BuildContext context) => MyOrderScreen(),
+        MyAddressScreen.routeName: (BuildContext context) => MyAddressScreen(),
+        OrderCheckout.routeName: (BuildContext context) => OrderCheckout(),
       },
     );
   }
@@ -62,8 +70,8 @@ class _SplashScreenState extends State<SplashScreen> {
   void _loadUI() async {
     if (await FirebaseAuth.instance.currentUser() != null) {
       Navigator.of(context).pushReplacementNamed(HomePage.routeName);
-    } else 
-    Navigator.of(context).pushReplacementNamed(LoginPage.routeName);
+    } else
+      Navigator.of(context).pushReplacementNamed(LoginPage.routeName);
   }
 
   @override

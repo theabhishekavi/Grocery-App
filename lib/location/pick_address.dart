@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geocoder/geocoder.dart';
+import 'package:shop/database/address_helper.dart';
+import 'package:shop/models/address_model.dart';
 import 'package:shop/payment/payment_page.dart';
 // import 'package:permission_handler/permission_handler.dart';
 
@@ -12,10 +15,30 @@ class PickAddress extends StatefulWidget {
 }
 
 class _PickAddressState extends State<PickAddress> {
-  static var _initialLatitude = 25.227821;
-  static var _initialLongitude = 86.981146;
+  AddressHelper _addressHelper = AddressHelper();
+  AddressModel _addressModel;
+
+  TextEditingController _nameController,
+      _localityController,
+      _landmarkController,
+      _pincodeController,
+      _numberController;
+
+  static var _initialLatitude, _initialLongitude;
 
   String addressLine = 'By Default';
+
+  @override
+  initState() {
+    super.initState();
+    _initialLatitude = 25.227821;
+    _initialLongitude = 86.981146;
+    _nameController = TextEditingController(text: "");
+    _localityController = TextEditingController(text: "");
+    _landmarkController = TextEditingController(text: "");
+    _pincodeController = TextEditingController(text: "");
+    _numberController = TextEditingController(text: "");
+  }
 
   GoogleMapController _controller;
 
@@ -40,16 +63,16 @@ class _PickAddressState extends State<PickAddress> {
   //       .checkPermissionStatus(PermissionGroup.locationWhenInUse);
   // }
 
-  Future<void> getUserAddress(LatLng location) async {
-    final coordinates = new Coordinates(location.latitude, location.longitude);
-    var addresses =
-        await Geocoder.local.findAddressesFromCoordinates(coordinates);
-    var first = addresses.first;
+  // Future<void> getUserAddress(LatLng location) async {
+  //   final coordinates = new Coordinates(location.latitude, location.longitude);
+  //   var addresses =
+  //       await Geocoder.local.findAddressesFromCoordinates(coordinates);
+  //   var first = addresses.first;
 
-    addressLine =
-        '${first.addressLine} and  ${first.locality} and ${first.featureName} and ${first.subLocality}';
-    print(addressLine);
-  }
+  //   addressLine =
+  //       '${first.addressLine} and  ${first.locality} and ${first.featureName} and ${first.subLocality}';
+  //   print(addressLine);
+  // }
 
   // Future<void> getUserCordinates(String query) async {
   //   var addresses = await Geocoder.local.findAddressesFromQuery(query);
@@ -85,21 +108,21 @@ class _PickAddressState extends State<PickAddress> {
                       target: LatLng(_initialLatitude, _initialLongitude),
                       zoom: 14.0,
                     ),
-                    onMapCreated: mapCreated,
+                    // onMapCreated: mapCreated,
                     markers: Set<Marker>.of(
                       <Marker>[
                         Marker(
-                          onTap: () {
-                            InfoWindow(title: "Hold and Drag"); //not working
-                          },
+                          // onTap: () {
+                          //   InfoWindow(title: "Hold and Drag"); //not working
+                          // },
                           draggable: true,
                           markerId: MarkerId('1'),
                           position: LatLng(_initialLatitude, _initialLongitude),
-                          onDragEnd: (location) {
-                            _initialLatitude = location.latitude;
-                            _initialLongitude = location.longitude;
-                            getUserAddress(location);
-                          },
+                          // onDragEnd: (location) {
+                          //   _initialLatitude = location.latitude;
+                          //   _initialLongitude = location.longitude;
+                          //   getUserAddress(location);
+                          // },
                         ),
                       ],
                     ),
@@ -132,9 +155,11 @@ class _PickAddressState extends State<PickAddress> {
                       child: Column(
                         children: <Widget>[
                           TextField(
+                            controller: _nameController,
                             decoration: InputDecoration(labelText: 'Name'),
                           ),
                           TextField(
+                            controller: _localityController,
                             decoration: InputDecoration(
                                 labelText: 'Street/Area/Locality'),
                             // onSubmitted: (address) async {
@@ -142,19 +167,23 @@ class _PickAddressState extends State<PickAddress> {
                             // },
                           ),
                           TextField(
+                            controller: _landmarkController,
                             decoration: InputDecoration(labelText: 'LandMark'),
                           ),
                           TextField(
+                            controller: _pincodeController,
                             decoration: InputDecoration(labelText: 'Pincode'),
+                            keyboardType: TextInputType.number,
                           ),
                           TextField(
-                            decoration: InputDecoration(labelText: 'Ph:No'),
+                            controller: _numberController,
+                            decoration: InputDecoration(labelText: 'Ph.Number'),
                             keyboardType: TextInputType.number,
                           ),
                           SizedBox(
                             height: 10,
                           ),
-                          Text(addressLine),
+                          // Text(addressLine),
                         ],
                       ),
                     ),
@@ -166,7 +195,43 @@ class _PickAddressState extends State<PickAddress> {
                     child: Text('Add Address'),
                     color: Theme.of(context).primaryColor,
                     onPressed: () {
-                      Navigator.of(context).pushNamed(PaymentPage.routeName);
+                      if (_nameController.text == "" ||
+                          _localityController.text == "" ||
+                          _landmarkController.text == "" ||
+                          _pincodeController.text == "" ||
+                          _numberController.text == "") {
+                      } else {
+                        if (_pincodeController.text.length != 6) {
+                          Fluttertoast.showToast(
+                            msg: "Enter a valid pincode",
+                            toastLength: Toast.LENGTH_SHORT,
+                            gravity: ToastGravity.CENTER,
+                          );
+                        } else if (_numberController.text.length != 10) {
+                          Fluttertoast.showToast(
+                            msg: "Phone Number should be of 10 digits",
+                            toastLength: Toast.LENGTH_SHORT,
+                            gravity: ToastGravity.CENTER,
+                          );
+                        } else {
+                          //All details are valid
+                         
+                          _addressModel = new AddressModel(
+                            name: _nameController.text,
+                            locality: _localityController.text,
+                            landmark: _landmarkController.text,
+                            phNumber: _numberController.text,
+                            pincode: _pincodeController.text,
+                          );
+                          insertAddress(_addressModel);
+                          Fluttertoast.showToast(
+                            msg: "Address Added Successfully!",
+                            toastLength: Toast.LENGTH_SHORT,
+                          );
+                          // Navigator.of(context)
+                          //     .pushNamed(PaymentPage.routeName);
+                        }
+                      }
                     },
                   )
                 ],
@@ -176,5 +241,10 @@ class _PickAddressState extends State<PickAddress> {
         ),
       ),
     );
+  }
+
+  Future<void> insertAddress(AddressModel addressItems) async {
+    int result = await _addressHelper.insertAddress(addressItems);
+    print(result);
   }
 }
