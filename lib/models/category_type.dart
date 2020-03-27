@@ -1,5 +1,6 @@
 class CategoryModel {
   final String categoryType;
+  final String categoryTypeImage;
   final String categoryName1;
   final String categoryImage1;
   final String categoryName2;
@@ -11,6 +12,7 @@ class CategoryModel {
 
   CategoryModel({
     this.categoryType,
+    this.categoryTypeImage,
     this.categoryName1,
     this.categoryImage1,
     this.categoryName2,

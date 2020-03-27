@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shop/models/favourite_items.dart';
 import '../database/favourite_helper.dart';
 
@@ -27,6 +28,7 @@ class _FavouritePageState extends State<FavouritePage> {
         productMrp: int.parse(map['productMrp']),
         productSp: int.parse(map['productSp']),
       );
+
       if (!favItemList.contains(x)) favItemList.add(x);
     }
   }
@@ -64,11 +66,6 @@ class _FavouritePageState extends State<FavouritePage> {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
-            // Container(
-            //   color: Colors.grey[300],
-            //   width: double.infinity,
-            //   height: 150,
-            // ),
 
             SingleChildScrollView(
               child: GridView.builder(
@@ -83,22 +80,13 @@ class _FavouritePageState extends State<FavouritePage> {
                         Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: Card(
-                            // decoration: BoxDecoration(
-                            //   border: Border(
-                            //     bottom: BorderSide(
-                            //       color: Colors.black26,
-                            //     ),
-                            //     right: BorderSide(
-                            //       color: Colors.black26,
-                            //     ),
-                            //   ),
-                            // ),
                             elevation: 5.0,
                             color: Colors.grey[200],
                             child: Padding(
                               padding: const EdgeInsets.all(15.0),
                               child: Column(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: <Widget>[
                                   CircleAvatar(
                                     backgroundColor: Colors.grey[300],
@@ -112,12 +100,14 @@ class _FavouritePageState extends State<FavouritePage> {
                                   ),
                                   Text(
                                     favItemList[index].categoryType,
-                                    style: TextStyle(fontStyle: FontStyle.italic),
+                                    style:
+                                        TextStyle(fontStyle: FontStyle.italic),
                                   ),
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: <Widget>[
-                                      Text('Rs ${favItemList[index].productSp}'),
+                                      Text(
+                                          'Rs ${favItemList[index].productSp}'),
                                       SizedBox(
                                         width: 5,
                                       ),
@@ -144,12 +134,24 @@ class _FavouritePageState extends State<FavouritePage> {
                           ),
                         ),
                         Positioned(
-                          top: 15,
-                          right: 15,
-                          child: Icon(
-                          Icons.favorite,
-                            size: 25,
-                            color: Theme.of(context).accentColor,
+                          top: 20,
+                          right: 20,
+                          child: InkWell(
+                            onTap: () {
+                              Fluttertoast.showToast(
+                                  msg: 'Item removed from Favourite list');
+                              _favouriteHelper.deleteFavouriteItem(
+                                  favItemList[index].productName +
+                                      favItemList[index].categoryType +
+                                      favItemList[index].productQuantity);
+                              favItemList.removeAt(index);
+                              setState(() {});
+                            },
+                            child: Icon(
+                              Icons.favorite,
+                              size: 25,
+                              color: Theme.of(context).accentColor,
+                            ),
                           ),
                         ),
                       ],

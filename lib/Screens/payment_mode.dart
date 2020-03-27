@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shop/payment/payment_upi.dart';
 
 class PaymentModeScreen extends StatefulWidget {
   int noOfItems;
@@ -49,7 +50,7 @@ class _PaymentModeScreenState extends State<PaymentModeScreen> {
                 setSelectedRadioTile(val);
               },
               selected: (selectedRadioTile == 1) ? true : false,
-              activeColor: Theme.of(context).accentColor,
+              activeColor: Colors.green,
             ),
             RadioListTile(
               value: 2,
@@ -58,7 +59,7 @@ class _PaymentModeScreenState extends State<PaymentModeScreen> {
               onChanged: (val) {
                 setSelectedRadioTile(val);
               },
-              activeColor: Theme.of(context).accentColor,
+              activeColor: Colors.green,
               selected: (selectedRadioTile == 2) ? true : false,
             ),
             RadioListTile(
@@ -69,7 +70,7 @@ class _PaymentModeScreenState extends State<PaymentModeScreen> {
               onChanged: (val) {
                 setSelectedRadioTile(val);
               },
-              activeColor: Theme.of(context).accentColor,
+              activeColor: Colors.green,
               selected: (selectedRadioTile == 3) ? true : false,
             ),
             Padding(
@@ -194,11 +195,19 @@ class _PaymentModeScreenState extends State<PaymentModeScreen> {
                 ),
               ),
             ),
-            
             (selectedRadioTile != 0)
                 ? RaisedButton(
-                    onPressed: () {},
-                    child: Text('Proceed to Payment'),
+                    onPressed: () {
+                      Navigator.of(context)
+                          .push(MaterialPageRoute(builder: (_) {
+                        return PaymentUpi();
+                      }));
+                    },
+                    child: Text(
+                      'Proceed to Payment',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    color: Theme.of(context).primaryColor,
                   )
                 : Padding(
                     padding: const EdgeInsets.all(0.0),

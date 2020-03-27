@@ -1,13 +1,21 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_pro/carousel_pro.dart';
 import 'package:flutter/widgets.dart';
+import 'package:shop/models/product_quantity_variant.dart';
 import '../Screens/product_screen.dart';
 import '../models/category_type.dart';
 
-class MyHomePage extends StatelessWidget {
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
   final TextStyle myStyle = TextStyle(
     fontSize: 15,
   );
+
   final TextStyle myStyleSmall = TextStyle(
     fontSize: 12,
     color: Colors.grey[600],
@@ -32,8 +40,130 @@ class MyHomePage extends StatelessWidget {
     ),
   );
 
+  List<CategoryModel> categoriesList = [
+    // CategoryModel(
+    //   categoryType: 'BreakFast Essentials',
+    //   categoryName1: 'Bread Jam',
+    //   categoryImage1:
+    //       'https://www.zabsupply.co.za/wp-content/uploads/2019/05/ZAB1331.png',
+    //   categoryName2: 'Dry Fruits',
+    //   categoryImage2:
+    //       'https://d27zlipt1pllog.cloudfront.net/pub/media/catalog/product/j/o/joh0156.jpg',
+    //   categoryName3: 'Horlicks Complan Bournvita',
+    //   categoryImage3:
+    //       'https://cubereach.com/demo/baniyachacha/dev/wp-content/uploads/2019/05/IHealthDrinks500gBNVT2857XX290216_9_B.jpg',
+    //   categoryName4: 'Corn Flakes Oats Dalia',
+    //   categoryImage4:
+    //       "https://5.imimg.com/data5/XG/QF/MY-3913207/baby-diaper-500x500.jpg",
+    // ),
+    // CategoryModel(
+    //   categoryType: 'Quick Prepare',
+    //   categoryName1: 'Maggie Monchow Soup',
+    //   categoryImage1: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
+    //   categoryName2: 'Cookies & Bakery Products',
+    //   categoryImage2: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
+    //   categoryName3: 'Tea Green Tea Cornflakes Chocos',
+    //   categoryImage3: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
+    //   categoryName4: 'Chow Pasta ketchup',
+    //   categoryImage4: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
+    // ),
+    // CategoryModel(
+    //   categoryType: 'BreakFast Essentials',
+    //   categoryName1: 'Bread Jam',
+    //   categoryImage1: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
+    //   categoryName2: 'Dry Fruits',
+    //   categoryImage2: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
+    //   categoryName3: 'Horlicks Complan Bournvita',
+    //   categoryImage3: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
+    //   categoryName4: 'Corn Flakes Oats Dalia',
+    //   categoryImage4: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
+    // ),
+    // CategoryModel(
+    //   categoryType: 'BreakFast Essentials',
+    //   categoryName1: 'Bread Jam',
+    //   categoryImage1: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
+    //   categoryName2: 'Dry Fruits',
+    //   categoryImage2: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
+    //   categoryName3: 'Horlicks Complan Bournvita',
+    //   categoryImage3: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
+    //   categoryName4: 'Corn Flakes Oats Dalia',
+    //   categoryImage4: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
+    // ),
+    // CategoryModel(
+    //   categoryType: 'BreakFast Essentials',
+    //   categoryName1: 'Bread Jam',
+    //   categoryImage1: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
+    //   categoryName2: 'Dry Fruits',
+    //   categoryImage2: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
+    //   categoryName3: 'Horlicks Complan Bournvita',
+    //   categoryImage3: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
+    //   categoryName4: 'Corn Flakes Oats Dalia',
+    //   categoryImage4: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
+    // ),
+    // CategoryModel(
+    //   categoryType: 'BreakFast Essentials',
+    //   categoryName1: 'Bread Jam',
+    //   categoryImage1: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
+    //   categoryName2: 'Dry Fruits',
+    //   categoryImage2: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
+    //   categoryName3: 'Horlicks Complan Bournvita',
+    //   categoryImage3: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
+    //   categoryName4: 'Corn Flakes Oats Dalia',
+    //   categoryImage4: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
+    // ),
+    // CategoryModel(
+    //   categoryType: 'BreakFast Essentials',
+    //   categoryName1: 'Bread Jam',
+    //   categoryImage1: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
+    //   categoryName2: 'Dry Fruits',
+    //   categoryImage2: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
+    //   categoryName3: 'Horlicks Complan Bournvita',
+    //   categoryImage3: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
+    //   categoryName4: 'Corn Flakes Oats Dalia',
+    //   categoryImage4: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
+    // ),
+    // CategoryModel(
+    //   categoryType: 'BreakFast Essentials',
+    //   categoryName1: 'Bread Jam',
+    //   categoryImage1: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
+    //   categoryName2: 'Dry Fruits',
+    //   categoryImage2: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
+    //   categoryName3: 'Horlicks Complan Bournvita',
+    //   categoryImage3: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
+    //   categoryName4: 'Corn Flakes Oats Dalia',
+    //   categoryImage4: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
+    // ),
+  ];
+
+  DatabaseReference databaseReference = FirebaseDatabase.instance.reference();
+
+  bool loadDataFromFirebase = false;
+
+  @override
+  void initState() {
+    super.initState();
+    getFirebaseData().then((_) {
+      setState(() {
+        loadDataFromFirebase = true;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    Widget loadingIndicator = Container(
+      width: 120,
+      height: 120,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Center(
+          child: CircularProgressIndicator(
+            valueColor: new AlwaysStoppedAnimation<Color>(
+                Theme.of(context).primaryColor),
+          ),
+        ),
+      ),
+    );
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.grey[300],
@@ -41,107 +171,17 @@ class MyHomePage extends StatelessWidget {
         child: Column(
           children: <Widget>[
             imageCarousel,
-            categories(context),
+            (loadDataFromFirebase == false)
+                ? Padding(
+                  padding: const EdgeInsets.only(top:20.0),
+                  child: Center(child: loadingIndicator),
+                )
+                : categories(context),
           ],
         ),
       ),
     );
   }
-
-  final List<CategoryModel> categoriesList = [
-    CategoryModel(
-      categoryType: 'BreakFast Essentials',
-      categoryName1: 'Bread Jam',
-      categoryImage1:
-          'https://www.zabsupply.co.za/wp-content/uploads/2019/05/ZAB1331.png',
-      categoryName2: 'Dry Fruits',
-      categoryImage2:
-          'https://d27zlipt1pllog.cloudfront.net/pub/media/catalog/product/j/o/joh0156.jpg',
-      categoryName3: 'Horlicks Complan Bournvita',
-      categoryImage3:
-          'https://cubereach.com/demo/baniyachacha/dev/wp-content/uploads/2019/05/IHealthDrinks500gBNVT2857XX290216_9_B.jpg',
-      categoryName4: 'Corn Flakes Oats Dalia',
-      categoryImage4:
-          "https://5.imimg.com/data5/XG/QF/MY-3913207/baby-diaper-500x500.jpg",
-    ),
-    CategoryModel(
-      categoryType: 'Quick Prepare',
-      categoryName1: 'Maggie Monchow Soup',
-      categoryImage1: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
-      categoryName2: 'Cookies & Bakery Products',
-      categoryImage2: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
-      categoryName3: 'Tea Green Tea Cornflakes Chocos',
-      categoryImage3: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
-      categoryName4: 'Chow Pasta ketchup',
-      categoryImage4: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
-    ),
-    CategoryModel(
-      categoryType: 'BreakFast Essentials',
-      categoryName1: 'Bread Jam',
-      categoryImage1: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
-      categoryName2: 'Dry Fruits',
-      categoryImage2: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
-      categoryName3: 'Horlicks Complan Bournvita',
-      categoryImage3: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
-      categoryName4: 'Corn Flakes Oats Dalia',
-      categoryImage4: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
-    ),
-    CategoryModel(
-      categoryType: 'BreakFast Essentials',
-      categoryName1: 'Bread Jam',
-      categoryImage1: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
-      categoryName2: 'Dry Fruits',
-      categoryImage2: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
-      categoryName3: 'Horlicks Complan Bournvita',
-      categoryImage3: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
-      categoryName4: 'Corn Flakes Oats Dalia',
-      categoryImage4: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
-    ),
-    CategoryModel(
-      categoryType: 'BreakFast Essentials',
-      categoryName1: 'Bread Jam',
-      categoryImage1: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
-      categoryName2: 'Dry Fruits',
-      categoryImage2: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
-      categoryName3: 'Horlicks Complan Bournvita',
-      categoryImage3: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
-      categoryName4: 'Corn Flakes Oats Dalia',
-      categoryImage4: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
-    ),
-    CategoryModel(
-      categoryType: 'BreakFast Essentials',
-      categoryName1: 'Bread Jam',
-      categoryImage1: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
-      categoryName2: 'Dry Fruits',
-      categoryImage2: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
-      categoryName3: 'Horlicks Complan Bournvita',
-      categoryImage3: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
-      categoryName4: 'Corn Flakes Oats Dalia',
-      categoryImage4: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
-    ),
-    CategoryModel(
-      categoryType: 'BreakFast Essentials',
-      categoryName1: 'Bread Jam',
-      categoryImage1: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
-      categoryName2: 'Dry Fruits',
-      categoryImage2: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
-      categoryName3: 'Horlicks Complan Bournvita',
-      categoryImage3: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
-      categoryName4: 'Corn Flakes Oats Dalia',
-      categoryImage4: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
-    ),
-    CategoryModel(
-      categoryType: 'BreakFast Essentials',
-      categoryName1: 'Bread Jam',
-      categoryImage1: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
-      categoryName2: 'Dry Fruits',
-      categoryImage2: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
-      categoryName3: 'Horlicks Complan Bournvita',
-      categoryImage3: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
-      categoryName4: 'Corn Flakes Oats Dalia',
-      categoryImage4: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
-    ),
-  ];
 
   void passData(BuildContext ctx, String catType, String catName) {
     Navigator.of(ctx).push(
@@ -154,6 +194,58 @@ class MyHomePage extends StatelessWidget {
         },
       ),
     );
+  }
+
+  Future<void> getFirebaseData() async {
+    String catTypeName, catTypeImage;
+    String category1Name, category1Image;
+    String category2Name, category2Image;
+    String category3Name, category3Image;
+    String category4Name, category4Image;
+    await databaseReference
+        .child('categories')
+        .once()
+        .then((DataSnapshot snapshot) {
+      Map<dynamic, dynamic> values = snapshot.value;
+      values.forEach((catTypeKey, catTypevalue) {
+        catTypeName = catTypeKey;
+        catTypeImage = catTypevalue['cat_image'];
+
+        if (catTypeName == 'Baby Care') {
+          //subcategories(1 to 4)
+          for (int i = 1; i <= 4; i++) {
+            Map<dynamic, dynamic> val = catTypevalue['$i'];
+            if (i == 1) {
+              category1Name = val['category_name'];
+              category1Image = val['category_image'];
+            } else if (i == 2) {
+              category2Name = val['category_name'];
+              category2Image = val['category_image'];
+            } else if (i == 3) {
+              category3Name = val['category_name'];
+              category3Image = val['category_image'];
+            } else if (i == 4) {
+              category4Name = val['category_name'];
+              category4Image = val['category_image'];
+            }
+          }
+
+          CategoryModel categoryModel = CategoryModel(
+            categoryType: catTypeName,
+            categoryTypeImage: catTypeImage,
+            categoryName1: category1Name,
+            categoryImage1: category1Image,
+            categoryName2: category2Name,
+            categoryImage2: category2Image,
+            categoryName3: category3Name,
+            categoryImage3: category3Image,
+            categoryName4: category4Name,
+            categoryImage4: category4Image,
+          );
+          categoriesList.add(categoryModel);
+        }
+      });
+    });
   }
 
   Widget categories(BuildContext context) {
@@ -183,9 +275,12 @@ class MyHomePage extends StatelessWidget {
                   : Padding(
                       padding: const EdgeInsets.all(0.0),
                     ),
-              Text(
-                categoriesList[index].categoryType,
-                style: TextStyle(fontSize: 17),
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Text(
+                  categoriesList[index].categoryType,
+                  style: TextStyle(fontSize: 20),
+                ),
               ),
               GridView(
                 physics: ScrollPhysics(),
@@ -204,8 +299,8 @@ class MyHomePage extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: <Widget>[
                           Container(
-                            width: MediaQuery.of(context).size.width/3,
-                            height: MediaQuery.of(context).size.width/4,
+                            width: MediaQuery.of(context).size.width / 3,
+                            height: MediaQuery.of(context).size.width / 4,
                             child: Image.network(
                               categoriesList[index].categoryImage1,
                             ),
@@ -233,12 +328,12 @@ class MyHomePage extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: <Widget>[
                           Container(
-                            width: MediaQuery.of(context).size.width/3,
-                            height: MediaQuery.of(context).size.width/4,
+                              width: MediaQuery.of(context).size.width / 3,
+                              height: MediaQuery.of(context).size.width / 4,
                               child: Image.network(
-                            categoriesList[index].categoryImage2,
-                            fit: BoxFit.cover,
-                          )),
+                                categoriesList[index].categoryImage2,
+                                fit: BoxFit.cover,
+                              )),
                           Text(
                             categoriesList[index].categoryName2,
                             style: TextStyle(fontSize: 14),
@@ -289,8 +384,8 @@ class MyHomePage extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: <Widget>[
                           Container(
-                            width: MediaQuery.of(context).size.width/3,
-                            height: MediaQuery.of(context).size.width/4,
+                            width: MediaQuery.of(context).size.width / 3,
+                            height: MediaQuery.of(context).size.width / 4,
                             child: Image.network(
                               categoriesList[index].categoryImage4,
                               fit: BoxFit.cover,
