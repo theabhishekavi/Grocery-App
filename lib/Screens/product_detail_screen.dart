@@ -2,14 +2,18 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shop/Screens/order_checkout_screen.dart';
 import 'package:shop/Screens/product_screen.dart';
 import 'package:shop/database/cartTable_helper.dart';
 import 'package:shop/database/favourite_helper.dart';
+import 'package:shop/drawer/my_address_screen.dart';
+import 'package:shop/login/login_screen.dart';
 import 'package:shop/models/cart_items.dart';
 import 'package:shop/models/favourite_items.dart';
 import 'package:shop/models/product_quantity_variant.dart';
 import 'package:shop/models/product_type.dart';
+import 'package:shop/utils/strings.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   static const routeName = '/ProductDetailScreenRouteName';
@@ -30,6 +34,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     return res.round();
   }
 
+  SharedPreferences sharedPreferences;
+  bool isLoggedIN;
+
+  Future<void> initializeSharedPreferences() async {
+    sharedPreferences = await SharedPreferences.getInstance();
+  }
+
   @override
   void initState() {
     for (int i = 0; i < widget.productTightList.length; i++) {
@@ -37,6 +48,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         productTightListWithoutProductTight.add(widget.productTightList[i]);
       }
     }
+    initializeSharedPreferences().then((_) {
+      setState(() {});
+    });
     super.initState();
   }
 
@@ -543,8 +557,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 cartItemsList.add(new CartItems(
                                   pImage: widget.productTight.productImage,
                                   pName: widget.productTight.productName,
-                                  pCountOrdered:
-                                     productCountOrdered,
+                                  pCountOrdered: productCountOrdered,
                                   pCategoryName:
                                       widget.productTight.categoryName,
                                   pMrp: widget.productTight.productMrp,
@@ -554,16 +567,45 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   pAvailability:
                                       widget.productTight.productAvailability,
                                 ));
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) {
-                                      return OrderCheckout(
-                                        cartItemList: cartItemsList,
-                                        checkOutPrice: (widget.productTight.productSp *productCountOrdered)*1.0,
-                                      );
-                                    },
-                                  ),
-                                );
+
+                                isLoggedIN = sharedPreferences
+                                    .getBool(StringKeys.isLoggedIn);
+                                if (isLoggedIN == null) {
+                                  Fluttertoast.showToast(
+                                      msg: "Log in to your Account");
+                                  Navigator.of(context).pushReplacementNamed(
+                                      LoginPage.routeName);
+                                } else {
+                                  String userId = sharedPreferences
+                                      .getString(StringKeys.userId);
+                                  List<String> defaultAddress =
+                                      sharedPreferences.getStringList(userId +
+                                          StringKeys.defaultAddressKey);
+                                  if (defaultAddress == null) {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) {
+                                          return MyAddressScreen();
+                                        },
+                                      ),
+                                    );
+                                  } else {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) {
+                                          return OrderCheckout(
+                                            cartItemList: cartItemsList,
+                                            checkOutPrice:
+                                                (widget.productTight.productSp *
+                                                        productCountOrdered) *
+                                                    1.0,
+                                            emptyCart: false,
+                                          );
+                                        },
+                                      ),
+                                    );
+                                  }
+                                }
                               } else {
                                 Fluttertoast.showToast(
                                     msg: 'Add an item to buy');

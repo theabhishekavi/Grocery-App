@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geocoder/geocoder.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shop/database/address_helper.dart';
+import 'package:shop/drawer/my_address_screen.dart';
 import 'package:shop/models/address_model.dart';
 import 'package:shop/payment/payment_page.dart';
+import 'package:shop/utils/strings.dart';
 // import 'package:permission_handler/permission_handler.dart';
 
 class PickAddress extends StatefulWidget {
@@ -28,6 +32,12 @@ class _PickAddressState extends State<PickAddress> {
 
   String addressLine = 'By Default';
 
+  SharedPreferences sharedPreferences;
+
+  Future<void> initializeSharedPreferences() async {
+    sharedPreferences = await SharedPreferences.getInstance();
+  }
+
   @override
   initState() {
     super.initState();
@@ -38,6 +48,9 @@ class _PickAddressState extends State<PickAddress> {
     _landmarkController = TextEditingController(text: "");
     _pincodeController = TextEditingController(text: "");
     _numberController = TextEditingController(text: "");
+    initializeSharedPreferences().then((_) {
+      setState(() {});
+    });
   }
 
   GoogleMapController _controller;
@@ -104,6 +117,8 @@ class _PickAddressState extends State<PickAddress> {
                     onTap: (location) {
                       print(location.latitude);
                     },
+                    zoomGesturesEnabled: false,
+                    myLocationButtonEnabled: true,
                     initialCameraPosition: CameraPosition(
                       target: LatLng(_initialLatitude, _initialLongitude),
                       zoom: 14.0,
@@ -133,7 +148,7 @@ class _PickAddressState extends State<PickAddress> {
                       padding: const EdgeInsets.all(15.0),
                       child: Icon(
                         Icons.my_location,
-                        size: 20,
+                        size: 25,
                         color: Theme.of(context).primaryColor,
                       ),
                     ),
@@ -215,7 +230,28 @@ class _PickAddressState extends State<PickAddress> {
                           );
                         } else {
                           //All details are valid
-                         
+                          SystemChannels.textInput
+                              .invokeMethod('TextInput.hide');
+                          List<String> defaultAddress = [
+                            _nameController.text,
+                            _localityController.text,
+                            _landmarkController.text,
+                            _pincodeController.text,
+                            _numberController.text,
+                          ];
+                          String userId =
+                              sharedPreferences.getString(StringKeys.userId);
+                          if (sharedPreferences.containsKey(
+                              userId + StringKeys.defaultAddressKey)) {
+                            sharedPreferences
+                                .remove(userId + StringKeys.defaultAddressKey);
+                            sharedPreferences.setStringList(
+                                userId + StringKeys.defaultAddressKey,
+                                defaultAddress);
+                          } else
+                            sharedPreferences.setStringList(
+                                userId + StringKeys.defaultAddressKey,
+                                defaultAddress);
                           _addressModel = new AddressModel(
                             name: _nameController.text,
                             locality: _localityController.text,
@@ -228,8 +264,9 @@ class _PickAddressState extends State<PickAddress> {
                             msg: "Address Added Successfully!",
                             toastLength: Toast.LENGTH_SHORT,
                           );
-                          // Navigator.of(context)
-                          //     .pushNamed(PaymentPage.routeName);
+
+                          Navigator.of(context)
+                              .pushReplacementNamed(MyAddressScreen.routeName);
                         }
                       }
                     },

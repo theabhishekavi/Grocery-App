@@ -124,6 +124,9 @@ class _ProductScreenState extends State<ProductScreen> {
 
     getAllData().then((_) {
       setState(() {
+        productList.sort((one,two){
+          return one.productName.compareTo(two.productName);
+        });
         loadDataFromFirebase = true;
         cartItemList = cartItemList;
         favItemList = favItemList;

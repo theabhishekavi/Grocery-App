@@ -8,6 +8,8 @@ class StringKeys{
   static const String providerPhoneNumber = 'providerPhoneNumber';
   static const String providerPhotoUrl = 'providerPhotoUrl';
 
+  static const String defaultAddressKey = 'defaultAddress';
+
   // provider keys
   static const String providerKeyGoogle = 'GOOGLE';
   static const String providerKeyFacebook = 'FACEBOOK';

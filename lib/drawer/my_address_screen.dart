@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shop/database/address_helper.dart';
-import 'package:shop/location/pick_address.dart';
+import 'package:shop/address/pick_address.dart';
 import 'package:shop/models/address_model.dart';
+import 'package:shop/utils/strings.dart';
 
 class MyAddressScreen extends StatefulWidget {
   static const routeName = '/MyAddressScreenRouteName';
+ 
+
   @override
   _MyAddressScreenState createState() => _MyAddressScreenState();
 }
@@ -12,6 +16,7 @@ class MyAddressScreen extends StatefulWidget {
 class _MyAddressScreenState extends State<MyAddressScreen> {
   List<AddressModel> _addressItemList = [];
   AddressHelper _addressHelper = AddressHelper();
+  SharedPreferences sharedPreferences;
 
   @override
   void initState() {
@@ -51,7 +56,7 @@ class _MyAddressScreenState extends State<MyAddressScreen> {
                   ),
                   InkWell(
                     onTap: () {
-                      Navigator.of(context).pushNamed(PickAddress.routeName);
+                      Navigator.of(context).pushReplacementNamed(PickAddress.routeName);
                     },
                     child: Padding(
                       padding: EdgeInsets.all(10.0),
@@ -151,6 +156,18 @@ class _MyAddressScreenState extends State<MyAddressScreen> {
 
   Future<void> deleteAddress(AddressModel addressModel) async{
     await _addressHelper.deleteAddress(addressModel.name+addressModel.locality+addressModel.landmark+addressModel.phNumber);
+    sharedPreferences =  await SharedPreferences.getInstance();
+    String userId = sharedPreferences.getString(StringKeys.userId);
+    List<String> defaultAddress = sharedPreferences.getStringList(userId+StringKeys.defaultAddressKey);
+    if(defaultAddress!=null &&
+     defaultAddress[0]== addressModel.name && 
+    defaultAddress[1]== addressModel.locality && 
+    defaultAddress[2]== addressModel.landmark &&
+    defaultAddress[3]== addressModel.pincode &&
+    defaultAddress[4]== addressModel.phNumber){
+      sharedPreferences.remove(userId+StringKeys.defaultAddressKey);
+    }
+
   }
 
   Future<void> getAddressList() async {

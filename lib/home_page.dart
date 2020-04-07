@@ -1,8 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shop/database/close_sql_database.dart';
 import 'package:shop/drawer/drawer_items.dart';
+import 'package:shop/models/profile_model.dart';
 import './login/logout_utils.dart';
 import './utils/strings.dart';
 import 'package:shop/login/login_screen.dart';
@@ -42,6 +44,8 @@ class _HomePageState extends State<HomePage> {
   FirebaseAuth _auth = FirebaseAuth.instance;
   FirebaseUser _firebaseUser;
 
+  DatabaseReference databaseReference = FirebaseDatabase.instance.reference();
+
   static const TextStyle optionStyle = TextStyle(
     fontSize: 13,
     fontWeight: FontWeight.normal,
@@ -64,9 +68,9 @@ class _HomePageState extends State<HomePage> {
   void loginState() async {
     _preferences = await SharedPreferences.getInstance();
     _firebaseUser = await _auth.currentUser();
-   
+
     if (_firebaseUser != null) {
-       _userId = _firebaseUser.uid;
+      _userId = _firebaseUser.uid;
       if (_firebaseUser.providerData[1].providerId == 'google.com') {
         _providerName = StringKeys.providerKeyGoogle;
         _providerDisplayName = _firebaseUser.displayName;
@@ -84,36 +88,62 @@ class _HomePageState extends State<HomePage> {
         _providerEmail = _firebaseUser.email;
       }
       _isLoggedIn = true;
-      addIsLoggedIn();
+      addIsLoggedInData();
     }
     setState(() {});
   }
 
-  void addIsLoggedIn() async {
+  void addIsLoggedInData() async {
     _preferences.setBool(StringKeys.isLoggedIn, true);
     _preferences.setString(StringKeys.providerName, _providerName);
     _preferences.setString(StringKeys.userId, _userId);
-    if (!_preferences.containsKey(_userId + StringKeys.providerDisplayName) &&
-        !_preferences.containsKey(_userId + StringKeys.providerPhoneNumber) &&
-        !_preferences.containsKey(_userId + StringKeys.providerEmail) &&
-        !_preferences.containsKey(_userId + StringKeys.providerEmail)) {
-      _preferences.setString(
-          _userId + StringKeys.providerDisplayName, _providerDisplayName);
-      _preferences.setString(
-          _userId + StringKeys.providerEmail, _providerEmail);
-      _preferences.setString(
-          _userId + StringKeys.providerPhoneNumber, _providerPhoneNumber);
-      _preferences.setString(
-          _userId + StringKeys.providerPhotoUrl, _providerPhotoUrl);
+
+    bool profileAlreadyPresent = false;
+
+    await databaseReference
+        .child("users")
+        .child(_userId)
+        .once()
+        .then((DataSnapshot snapshot) {
+      Map<dynamic, dynamic> values = snapshot.value;
+      values.forEach((valuesKey, valuesValue) {
+        if (valuesKey == 'profile') {
+          profileAlreadyPresent = true;
+        }
+      });
+    });
+    if (!profileAlreadyPresent) {
+      ProfileModel profileModel = ProfileModel(
+        providerDisplayName: _providerDisplayName,
+        providerEmail: _providerEmail,
+        providerName: _providerName,
+        providerPhoneNumber: _providerPhoneNumber,
+        providerPhotoUrl: _providerPhotoUrl,
+      );
+      await databaseReference
+          .child("users")
+          .child(_userId)
+          .child("profile")
+          .set(profileModel.toMap());
     }
+
+    // if (!_preferences.containsKey(_userId + StringKeys.providerDisplayName) &&
+    //     !_preferences.containsKey(_userId + StringKeys.providerPhoneNumber) &&
+    //     !_preferences.containsKey(_userId + StringKeys.providerEmail) &&
+    //     !_preferences.containsKey(_userId + StringKeys.providerEmail)) {
+    //   _preferences.setString(
+    //       _userId + StringKeys.providerDisplayName, _providerDisplayName);
+    //   _preferences.setString(
+    //       _userId + StringKeys.providerEmail, _providerEmail);
+    //   _preferences.setString(
+    //       _userId + StringKeys.providerPhoneNumber, _providerPhoneNumber);
+    //   _preferences.setString(
+    //       _userId + StringKeys.providerPhotoUrl, _providerPhotoUrl);
+    // }
   }
 
   @override
   Widget build(BuildContext context) {
-    // print(
-    //     '$_isLoggedIn $_providerName $_providerDisplayName $_providerEmail $_providerPhoneNumber $_providerPhotoUrl $_userId');
-    // if (_preferences != null)
-    //   print('${_preferences.containsKey('isLoggedIn')}');
     return WillPopScope(
       onWillPop: () async {
         if (_selectedIndex == 0) {
@@ -161,7 +191,7 @@ class _HomePageState extends State<HomePage> {
               ),
             ],
             currentIndex: _selectedIndex,
-            fixedColor: Theme.of(context).accentColor,
+            fixedColor: Theme.of(context).primaryColor,
             onTap: (index) {
               setState(() {
                 _selectedIndex = index;
@@ -172,12 +202,15 @@ class _HomePageState extends State<HomePage> {
           ),
           appBar: AppBar(
             actions: <Widget>[
+              // IconButton(
+              //   icon: Icon(Icons.search),
+              //   onPressed: () {},
+              // ),
               IconButton(
-                icon: Icon(Icons.search),
-                onPressed: () {},
-              ),
-              IconButton(
-                icon: Icon(Icons.notifications),
+                icon: Icon(
+                  Icons.power_settings_new,
+                  size: 30,
+                ),
                 onPressed: () {
                   _logoutUtils.logout(context, _preferences);
                 },

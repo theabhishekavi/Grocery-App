@@ -73,6 +73,12 @@ class CartTableHelper{
     return result; 
   }
 
+  Future<void> emptyCart()async{
+    Database db = await this.database;
+    await db.delete(cartTable);
+
+  }
+
   Future<int> updateCart(CartItems cartItems) async{
     var db = await this.database;
     var result = await db.update(cartTable, cartItems.toMap(), where: '$pId = ?',whereArgs: [cartItems.pName+cartItems.pQuantity]);

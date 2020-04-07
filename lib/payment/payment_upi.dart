@@ -1,13 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shop/models/address_model.dart';
+import 'package:shop/models/cart_items.dart';
 import 'package:shop/payment/payment_success.dart';
 import 'package:shop/utils/strings.dart';
 import 'package:upi_india/upi_india.dart';
 
 class PaymentUpi extends StatefulWidget {
+  final int noOfItems;
   final double checkOutPrice;
-  PaymentUpi({this.checkOutPrice});
+  final double totalMrp;
+  final AddressModel addressModel;
+  final List<CartItems> cartItemsList;
+  final String userId;
+  final bool emptyCart;
+  PaymentUpi(
+      {this.checkOutPrice,
+      this.noOfItems,
+      this.addressModel,
+      this.cartItemsList,
+      this.totalMrp,
+      this.emptyCart,
+      this.userId});
   @override
   _PaymentUpiState createState() => _PaymentUpiState();
 }
@@ -15,7 +31,7 @@ class PaymentUpi extends StatefulWidget {
 class _PaymentUpiState extends State<PaymentUpi> {
   List details = [
     ['Paytm', 'PhonePe', 'GooglePay'],
-    ['8051270647@PAYTM', '8051270647@ybl', 'souravshivaay632@okaxis'],
+    ['8809765191@PAYTM', '8809765191@ybl', 'abhishekavi4602@oksbi'],
     [UpiIndiaApps.PayTM, UpiIndiaApps.PhonePe, UpiIndiaApps.GooglePay]
   ];
   static const String receiverName = 'ANIL STORE';
@@ -62,7 +78,7 @@ class _PaymentUpiState extends State<PaymentUpi> {
   }
 
   String txnId, resCode, txnRef, status, approvalRef, currentTime, orderID;
-  bool isSuccess = false;
+  // bool isSuccess = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -119,32 +135,50 @@ class _PaymentUpiState extends State<PaymentUpi> {
                               1)
                           .then((res) {
                         print('Printing Response $res');
-
-                        UpiIndiaResponse _upiResponse = UpiIndiaResponse(res);
-                        txnId = _upiResponse.transactionId;
-                        resCode = _upiResponse.responseCode;
-                        txnRef = _upiResponse.transactionRefId;
-                        status = _upiResponse.status;
-                        approvalRef = _upiResponse.approvalRefNo;
-                        currentTime =
-                            DateTime.now().toString();
-                        orderID = userId + '($currentTime)';
-                        print(orderID);
-                        if (status == 'success') {
-                          isSuccess = true;
-                          // Write  details to firebase
-
+                        if (res == 'app_not_installed') {
+                          Fluttertoast.showToast(msg: "App not Installed");
+                        } else if (res == 'user_canceled') {
+                          Fluttertoast.showToast(msg: 'Payment Cancelled');
                         } else {
-                          Fluttertoast.showToast(msg: 'Payment Failed');
-                          isSuccess = false;
-                          Navigator.of(context)
-                              .pushReplacement(MaterialPageRoute(builder: (_) {
-                            return PaymentSuccess(
-                              orderId: orderID,
-                              txnID: txnId,
-                              prePaid: true,
-                            );
-                          }));
+                          UpiIndiaResponse _upiResponse = UpiIndiaResponse(res);
+
+                          txnId = _upiResponse.transactionId;
+                          resCode = _upiResponse.responseCode;
+                          txnRef = _upiResponse.transactionRefId;
+                          status = _upiResponse.status;
+                          approvalRef = _upiResponse.approvalRefNo;
+                          currentTime = DateFormat("dd-MM-yyyy HH:mm:ss")
+                              .format(DateTime.now());
+                          orderID = userId + '$currentTime';
+                          print(orderID);
+                          if (status == 'success') {
+                            // isSuccess = true;
+                            print('$txnId $txnRef $approvalRef');
+                            // Write  details to firebase
+                            Navigator.of(context).pushAndRemoveUntil(
+                                MaterialPageRoute(
+                              builder: (_) {
+                                return PaymentSuccess(
+                                  orderId: orderID,
+                                  txnId: txnId,
+                                  prepaid: true,
+                                  addressModel: widget.addressModel,
+                                  cartItemsList: widget.cartItemsList,
+                                  checkOutPrice: widget.checkOutPrice,
+                                  noOfItems: widget.noOfItems,
+                                  totalMrp: widget.totalMrp,
+                                  userId: widget.userId,
+                                  emptyCart: widget.emptyCart,
+                                  paymentMode: details[0]
+                                      [selectedRadioTile - 1],
+                                );
+                              },
+                            ), (Route<dynamic> route) => false);
+                          } else {
+                            Fluttertoast.showToast(msg: 'Payment Failed');
+                            // isSuccess = false;
+
+                          }
                         }
                       });
                     },

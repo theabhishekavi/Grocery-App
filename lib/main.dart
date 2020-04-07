@@ -4,17 +4,18 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shop/drawer/favourite_screen.dart';
 import 'package:shop/drawer/my_address_screen.dart';
-import 'package:shop/drawer/my_order_screen.dart';
+import 'package:shop/orders/my_order_screen.dart';
 import 'package:shop/Screens/order_checkout_screen.dart';
 import 'package:shop/Screens/product_detail_screen.dart';
 import 'package:shop/Screens/product_screen.dart';
 import 'package:shop/drawer/profile_screen.dart';
-import 'package:shop/location/pick_address.dart';
+import 'package:shop/address/pick_address.dart';
 import 'package:shop/login/login_screen.dart';
 import 'package:shop/navigation_screens/cart.dart';
-import 'package:shop/payment/payment_page.dart';
+
 import './login/phone_login_screen.dart';
 import './home_page.dart';
+import 'package:flutter/services.dart';
 
 void main() {
   runApp(MyApp());
@@ -23,6 +24,10 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: SplashScreen(),
@@ -38,11 +43,11 @@ class MyApp extends StatelessWidget {
         LoginPage.routeName: (BuildContext context) => LoginPage(),
         PhoneLogin.routeName: (BuildContext context) => PhoneLogin(),
         PickAddress.routeName: (BuildContext context) => PickAddress(),
-        PaymentPage.routeName: (BuildContext context) => PaymentPage(),
         CartPage.routeName: (BuildContext context) => CartPage(),
         FavouritePage.routeName: (BuildContext context) => FavouritePage(),
         ProfileScreen.routeName: (BuildContext context) => ProfileScreen(),
-        ProductDetailScreen.routeName: (BuildContext context) => ProductDetailScreen(),
+        ProductDetailScreen.routeName: (BuildContext context) =>
+            ProductDetailScreen(),
         MyOrderScreen.routeName: (BuildContext context) => MyOrderScreen(),
         MyAddressScreen.routeName: (BuildContext context) => MyAddressScreen(),
         OrderCheckout.routeName: (BuildContext context) => OrderCheckout(),

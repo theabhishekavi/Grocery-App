@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shop/Screens/order_checkout_screen.dart';
+import 'package:shop/drawer/my_address_screen.dart';
+import 'package:shop/login/login_screen.dart';
 import 'package:shop/models/cart_items.dart';
+import 'package:shop/utils/strings.dart';
 import '../database/cartTable_helper.dart';
 
 class CartPage extends StatefulWidget {
@@ -14,6 +18,7 @@ class _CartPageState extends State<CartPage> {
   CartTableHelper databaseHelper = CartTableHelper();
   double _checkoutPrice = 0.0;
   List<CartItems> cartItemList = [];
+  SharedPreferences sharedPreferences;
 
   static double calPrice(List<CartItems> cartItemList) {
     double _sum = 0.0;
@@ -24,6 +29,8 @@ class _CartPageState extends State<CartPage> {
   }
 
   Future<void> getCartItems() async {
+    sharedPreferences = await SharedPreferences.getInstance();
+
     List<Map<String, dynamic>> list = await databaseHelper.getCartMapList();
     for (int i = 0; i < list.length; i++) {
       Map<String, dynamic> map = list[i];
@@ -65,9 +72,37 @@ class _CartPageState extends State<CartPage> {
           FlatButton(
             color: Colors.grey[400],
             onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(builder: (_){
-                return OrderCheckout(cartItemList: cartItemList, checkOutPrice: _checkoutPrice,);
-              }));
+              bool isLoggedIN;
+              isLoggedIN = sharedPreferences.getBool(StringKeys.isLoggedIn);
+
+              if (_checkoutPrice == 0.0) {
+                Fluttertoast.showToast(msg: "Add items in Cart");
+              } else if (isLoggedIN == null) {
+                Fluttertoast.showToast(msg: "Log in to your Account");
+                Navigator.of(context).pushReplacementNamed(LoginPage.routeName);
+              } else {
+                String userId = sharedPreferences.getString(StringKeys.userId);
+                List<String> defaultAddress = sharedPreferences
+                    .getStringList(userId + StringKeys.defaultAddressKey);
+                if (defaultAddress == null) {
+                  Navigator.of(context).push(MaterialPageRoute(builder: (_){
+                    return MyAddressScreen();
+                  }));
+
+                } else {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) {
+                        return OrderCheckout(
+                          cartItemList: cartItemList,
+                          checkOutPrice: _checkoutPrice,
+                          emptyCart: true,
+                        );
+                      },
+                    ),
+                  );
+                }
+              }
             },
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,

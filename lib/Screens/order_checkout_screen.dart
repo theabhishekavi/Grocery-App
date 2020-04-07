@@ -1,24 +1,54 @@
 import 'package:flutter/material.dart';
-import 'package:shop/Screens/payment_mode.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shop/address/change_address.dart';
+import 'package:shop/payment/payment_mode.dart';
+import 'package:shop/models/address_model.dart';
 import 'package:shop/models/cart_items.dart';
+import 'package:shop/utils/strings.dart';
 
 class OrderCheckout extends StatefulWidget {
   static const routeName = '/OrderCheckoutRouteName';
-  List<CartItems> cartItemList;
-  double checkOutPrice;
+  final List<CartItems> cartItemList;
+  final double checkOutPrice;
+  bool emptyCart;
 
-  OrderCheckout({this.cartItemList, this.checkOutPrice});
+  OrderCheckout({this.cartItemList, this.checkOutPrice, this.emptyCart});
   @override
   _OrderCheckoutState createState() => _OrderCheckoutState();
 }
 
 class _OrderCheckoutState extends State<OrderCheckout> {
   var _totalMrp = 0.0;
+  SharedPreferences sharedPreferences;
+  AddressModel addressModel = new AddressModel();
+  List<String> defaultAddress = [];
+  String userId;
+
+  Future<void> getDefaultAddress() async {
+    sharedPreferences = await SharedPreferences.getInstance();
+    userId = sharedPreferences.getString(StringKeys.userId);
+    if (sharedPreferences.containsKey(userId + StringKeys.defaultAddressKey)) {
+      defaultAddress = sharedPreferences
+          .getStringList(userId + StringKeys.defaultAddressKey);
+      print(defaultAddress[0]);
+      addressModel = new AddressModel(
+        name: defaultAddress[0],
+        locality: defaultAddress[1],
+        landmark: defaultAddress[2],
+        pincode: defaultAddress[3],
+        phNumber: defaultAddress[4],
+      );
+    }
+  }
 
   @override
   void initState() {
     super.initState();
     _totalMrp = calPrice(widget.cartItemList);
+    getDefaultAddress().then((_) {
+      setState(() {});
+    });
   }
 
   int discountPer(int mrp, int sp) {
@@ -31,7 +61,6 @@ class _OrderCheckoutState extends State<OrderCheckout> {
     for (int i = 0; i < cartItemList.length; i++) {
       _sum += cartItemList[i].pMrp * cartItemList[i].pCountOrdered;
     }
-    print(_sum);
     return _sum;
   }
 
@@ -54,32 +83,54 @@ class _OrderCheckoutState extends State<OrderCheckout> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
-                      Text(
-                        'Name',
-                        style: TextStyle(fontSize: 20),
-                      ),
-                      SizedBox(
-                        height: 5,
-                      ),
-                      Text(
-                        'Locality',
-                        style: TextStyle(fontSize: 14),
-                      ),
-                      Text(
-                        'LandMark',
-                        style: TextStyle(fontSize: 14),
-                      ),
-                      Text(
-                        'PinCode',
-                        style: TextStyle(fontSize: 14),
-                      ),
-                      Text(
-                        'Ph.Number',
-                        style: TextStyle(fontSize: 14),
-                      ),
+                      (defaultAddress.length == 5)
+                          ? Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Text(
+                                  '${defaultAddress[0]}',
+                                  style: TextStyle(fontSize: 20),
+                                ),
+                                SizedBox(
+                                  height: 5,
+                                ),
+                                Text(
+                                  '${defaultAddress[1]}',
+                                  style: TextStyle(fontSize: 14),
+                                ),
+                                Text(
+                                  '${defaultAddress[2]}',
+                                  style: TextStyle(fontSize: 14),
+                                ),
+                                Text(
+                                  '${defaultAddress[3]}',
+                                  style: TextStyle(fontSize: 14),
+                                ),
+                                Text(
+                                  '${defaultAddress[4]}',
+                                  style: TextStyle(fontSize: 14),
+                                )
+                              ],
+                            )
+                          : Text('No address Added'),
                       RaisedButton(
-                        child: Text('Change or Add Address'),
-                        onPressed: () {},
+                        child: Text(
+                          'Change Address',
+                          style: TextStyle(color: Colors.white, fontSize: 16),
+                        ),
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) {
+                                return ChangeAddress(
+                                  cartItemList: widget.cartItemList,
+                                  checkOutPrice: widget.checkOutPrice,
+                                  emptyCart: widget.emptyCart,
+                                );
+                              },
+                            ),
+                          );
+                        },
                         color: Theme.of(context).primaryColor,
                       ),
                     ],
@@ -346,17 +397,25 @@ class _OrderCheckoutState extends State<OrderCheckout> {
                 ),
                 InkWell(
                   onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) {
-                          return PaymentModeScreen(
-                            checkOutPrice: widget.checkOutPrice,
-                            noOfItems: widget.cartItemList.length,
-                            totalMrp: _totalMrp,
-                          );
-                        },
-                      ),
-                    );
+                    if (defaultAddress.length == 5) {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) {
+                            return PaymentModeScreen(
+                              checkOutPrice: widget.checkOutPrice,
+                              noOfItems: widget.cartItemList.length,
+                              totalMrp: _totalMrp,
+                              addressModel: addressModel,
+                              cartItemsList: widget.cartItemList,
+                              userId: userId,
+                              emptyCart: widget.emptyCart,
+                            );
+                          },
+                        ),
+                      );
+                    } else {
+                      Fluttertoast.showToast(msg: 'Address Not Found');
+                    }
                   },
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
