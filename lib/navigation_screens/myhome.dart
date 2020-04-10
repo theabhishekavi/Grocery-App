@@ -2,7 +2,6 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_pro/carousel_pro.dart';
 import 'package:flutter/widgets.dart';
-import 'package:shop/models/product_quantity_variant.dart';
 import '../Screens/product_screen.dart';
 import '../models/category_type.dart';
 
@@ -19,25 +18,6 @@ class _MyHomePageState extends State<MyHomePage> {
   final TextStyle myStyleSmall = TextStyle(
     fontSize: 12,
     color: Colors.grey[600],
-  );
-
-  final Widget imageCarousel = Container(
-    height: 170,
-    child: Carousel(
-      boxFit: BoxFit.cover,
-      images: [
-        AssetImage('assets/offer_images/o_image1.jpg'),
-        AssetImage('assets/offer_images/o_image2.jpg'),
-        AssetImage('assets/offer_images/o_image3.jpg'),
-      ],
-      dotSize: 4.0,
-      dotSpacing: 15.0,
-      dotColor: Colors.pink[300],
-      indicatorBgPadding: 5.0,
-      autoplay: true,
-      animationCurve: Curves.fastOutSlowIn,
-      animationDuration: Duration(milliseconds: 3000),
-    ),
   );
 
   List<CategoryModel> categoriesList = [
@@ -138,6 +118,7 @@ class _MyHomePageState extends State<MyHomePage> {
   DatabaseReference databaseReference = FirebaseDatabase.instance.reference();
 
   bool loadDataFromFirebase = false;
+  static List<String> slideShowImages = [];
 
   @override
   void initState() {
@@ -168,17 +149,30 @@ class _MyHomePageState extends State<MyHomePage> {
       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.grey[300],
       body: SingleChildScrollView(
-        child: Column(
-          children: <Widget>[
-            imageCarousel,
-            (loadDataFromFirebase == false)
-                ? Padding(
-                  padding: const EdgeInsets.only(top:20.0),
-                  child: Center(child: loadingIndicator),
-                )
-                : categories(context),
-          ],
-        ),
+        child: (loadDataFromFirebase == false)
+            ? Padding(
+                padding: const EdgeInsets.only(top: 20.0),
+                child: Center(child: loadingIndicator),
+              )
+            : Column(
+                children: <Widget>[
+                  Container(
+                    height: 170,
+                    child: Carousel(
+                      boxFit: BoxFit.cover,
+                      images: imageFromNetwork(slideShowImages),
+                      dotSize: 4.0,
+                      dotSpacing: 15.0,
+                      dotColor: Colors.pink[300],
+                      indicatorBgPadding: 2.0,
+                      autoplay: true,
+                      animationCurve: Curves.fastOutSlowIn,
+                      animationDuration: Duration(milliseconds: 3000),
+                    ),
+                  ),
+                  categories(context),
+                ],
+              ),
       ),
     );
   }
@@ -246,7 +240,50 @@ class _MyHomePageState extends State<MyHomePage> {
         }
       });
     });
+
+    await databaseReference
+        .child('slide_show_images')
+        .once()
+        .then((DataSnapshot snapshot) {
+      List<dynamic> list = snapshot.value;
+      for (int i = 1; i < list.length; i++) {
+        slideShowImages.add(list[i]);
+      }
+      // if (map != null) {
+      //   map.forEach((key, keyValue) {
+      //     slideShowImages.add(keyValue);
+      //   });
+      // }
+    });
   }
+
+  static List<dynamic> imageFromNetwork(List<String> images) {
+    List<dynamic> res = [];
+    for (int i = 0; i < images.length; i++) {
+      res.add(Image.network(images[i],fit: BoxFit.cover,));
+    }
+    return res;
+  }
+
+  // final Widget imageCarousel = Container(
+  //   height: 170,
+  //   child: Carousel(
+  //     boxFit: BoxFit.cover,
+  //     images: imageFromNetwork(slideShowImages),
+
+  //     // AssetImage('assets/offer_images/o_image1.jpg'),
+  //     // AssetImage('assets/offer_images/o_image2.jpg'),
+  //     // AssetImage('assets/offer_images/o_image3.jpg'),
+
+  //     dotSize: 4.0,
+  //     dotSpacing: 15.0,
+  //     dotColor: Colors.pink[300],
+  //     indicatorBgPadding: 5.0,
+  //     autoplay: true,
+  //     animationCurve: Curves.fastOutSlowIn,
+  //     animationDuration: Duration(milliseconds: 3000),
+  //   ),
+  // );
 
   Widget categories(BuildContext context) {
     return ListView.builder(

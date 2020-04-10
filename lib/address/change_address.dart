@@ -37,9 +37,11 @@ class _ChangeAddressState extends State<ChangeAddress> {
   void initState() {
     super.initState();
     getAddressList().then((_) {
-      setState(() {
-        _addressItemList = _addressItemList;
-      });
+      if (this.mounted) {
+        setState(() {
+          _addressItemList = _addressItemList;
+        });
+      }
     });
   }
 

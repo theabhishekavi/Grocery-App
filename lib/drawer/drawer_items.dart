@@ -7,7 +7,7 @@ import 'package:shop/login/logout_utils.dart';
 import 'package:shop/models/profile_model.dart';
 import './favourite_screen.dart';
 import 'package:shop/orders/my_order_screen.dart';
-import 'package:shop/drawer/profile_screen.dart';
+import 'package:shop/profile/profile_screen.dart';
 import '../utils/strings.dart';
 
 class DrawerItems extends StatefulWidget {
@@ -31,15 +31,16 @@ class _DrawerItemsState extends State<DrawerItems> {
 
   String _userId;
 
-  bool _isFirebaseDataLoaded = false;
+  // bool _isFirebaseDataLoaded = false;
 
   @override
   void initState() {
     super.initState();
-    getDataFromFirebase().then((_){
-       setState(() {
-        _isFirebaseDataLoaded = true;
-      });
+    getDataFromFirebase().then((_) {
+      if (this.mounted)
+        setState(() {
+          // _isFirebaseDataLoaded = true;
+        });
     });
   }
 
@@ -62,24 +63,20 @@ class _DrawerItemsState extends State<DrawerItems> {
         _providerDisplayName = profileModel.providerDisplayName;
         _providerEmail = profileModel.providerEmail;
 
-        if(_providerDisplayName == null){
-          if(_providerName == StringKeys.providerKeyEmailPassword){
+        if (_providerDisplayName == null) {
+          if (_providerName == StringKeys.providerKeyEmailPassword) {
             _providerDisplayName = "EMAIL USER";
-          }
-          else if(_providerName == StringKeys.providerKeyPhone){
+          } else if (_providerName == StringKeys.providerKeyPhone) {
             _providerDisplayName = profileModel.providerPhoneNumber;
           }
-        }
-        else if(_providerEmail == null){
-          if(_providerName == StringKeys.providerKeyFacebook){
+        } else if (_providerEmail == null) {
+          if (_providerName == StringKeys.providerKeyFacebook) {
             _providerEmail = "FACEBOOK USER";
-          }
-          else if(_providerName == StringKeys.providerKeyPhone){
+          } else if (_providerName == StringKeys.providerKeyPhone) {
             _providerEmail = "PHONE USER";
-          } 
+          }
         }
       });
-     
     }
   }
 
@@ -138,26 +135,27 @@ class _DrawerItemsState extends State<DrawerItems> {
     return Drawer(
       child: ListView(
         children: <Widget>[
-          (_isFirebaseDataLoaded == true)?UserAccountsDrawerHeader(
-            accountName: (_isLoggedIn && _providerDisplayName != null)
-                ? Text('$_providerDisplayName')
-                : Text('Guest User'),
-            accountEmail: (_isLoggedIn && _providerEmail != null)
-                ? Text('$_providerEmail')
-                : Text('Guest Email'),
-            currentAccountPicture: CircleAvatar(
-              backgroundColor: Colors.white,
-              child: Text(
-                (_isLoggedIn && _providerDisplayName != null)
-                    ? '${_providerDisplayName.substring(0, 1)}'
-                    : 'G',
-                style: TextStyle(fontSize: 25.0),
-              ),
-            ),
-          ):UserAccountsDrawerHeader(
-            accountEmail: Text(""),
-            accountName: Text(""),
-          ),
+         UserAccountsDrawerHeader(
+                  accountName: (_isLoggedIn && _providerDisplayName != null)
+                      ? Text('$_providerDisplayName',style: TextStyle(fontSize: 16),)
+                      : Text('Guest User'),
+                  accountEmail: (_isLoggedIn && _providerEmail != null)
+                      ? Text('$_providerEmail')
+                      : Text('Guest Email'),
+                  currentAccountPicture: CircleAvatar(
+                    backgroundColor: Colors.white,
+                    child: Text(
+                      (_isLoggedIn && _providerDisplayName != null)
+                          ? '${_providerDisplayName.substring(0, 1)}'
+                          : 'G',
+                      style: TextStyle(fontSize: 25.0),
+                    ),
+                  ),
+                ),
+              // : UserAccountsDrawerHeader(
+              //     accountEmail: Text(""),
+              //     accountName: Text(""),
+              //   ),
           ListTile(
               title: Text(
                 'My Account',

@@ -7,7 +7,6 @@ import 'package:shop/drawer/drawer_items.dart';
 import 'package:shop/models/profile_model.dart';
 import './login/logout_utils.dart';
 import './utils/strings.dart';
-import 'package:shop/login/login_screen.dart';
 import './navigation_screens/cart.dart';
 import './navigation_screens/categories.dart';
 import './navigation_screens/myhome.dart';
@@ -29,6 +28,7 @@ class _HomePageState extends State<HomePage> {
   Widget currentPage;
   CloseAllSqlDatabase _closeAllSqlDatabase = CloseAllSqlDatabase();
   LogoutUtils _logoutUtils = LogoutUtils();
+  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   int _selectedIndex = 0;
   bool _isLoggedIn = false;
@@ -88,12 +88,12 @@ class _HomePageState extends State<HomePage> {
         _providerEmail = _firebaseUser.email;
       }
       _isLoggedIn = true;
-      addIsLoggedInData();
+      await addIsLoggedInData();
     }
     setState(() {});
   }
 
-  void addIsLoggedInData() async {
+  Future<void> addIsLoggedInData() async {
     _preferences.setBool(StringKeys.isLoggedIn, true);
     _preferences.setString(StringKeys.providerName, _providerName);
     _preferences.setString(StringKeys.userId, _userId);
@@ -158,6 +158,7 @@ class _HomePageState extends State<HomePage> {
         }
       },
       child: Scaffold(
+          key: _scaffoldKey,
           body: currentPage,
           bottomNavigationBar: BottomNavigationBar(
             items: const <BottomNavigationBarItem>[
@@ -201,6 +202,12 @@ class _HomePageState extends State<HomePage> {
             type: BottomNavigationBarType.fixed,
           ),
           appBar: AppBar(
+            leading: InkWell(
+              child: Icon(Icons.menu),
+              onTap: () {
+                _scaffoldKey.currentState.openDrawer();
+              },
+            ),
             actions: <Widget>[
               // IconButton(
               //   icon: Icon(Icons.search),

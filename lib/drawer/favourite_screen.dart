@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:shop/Screens/product_screen.dart';
 import 'package:shop/models/favourite_items.dart';
 import '../database/favourite_helper.dart';
 
@@ -53,19 +54,19 @@ class _FavouritePageState extends State<FavouritePage> {
     return Scaffold(
       appBar: AppBar(
         actions: <Widget>[],
-        title: Text('Anil Store'),
+        title: Text('Favourites'),
       ),
       body: SingleChildScrollView(
         child: Column(
           children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.only(top: 12.0, bottom: 15.0),
-              child: Text(
-                'FAVOURITE ITEMS',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ),
+            // Padding(
+            //   padding: const EdgeInsets.only(top: 12.0, bottom: 15.0),
+            //   child: Text(
+            //     'FAVOURITE ITEMS',
+            //     textAlign: TextAlign.center,
+            //     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            //   ),
+            // ),
 
             SingleChildScrollView(
               child: GridView.builder(
@@ -84,51 +85,63 @@ class _FavouritePageState extends State<FavouritePage> {
                             color: Colors.grey[200],
                             child: Padding(
                               padding: const EdgeInsets.all(15.0),
-                              child: Column(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: <Widget>[
-                                  CircleAvatar(
-                                    backgroundColor: Colors.grey[300],
-                                    backgroundImage: NetworkImage(
-                                        favItemList[index].productImage),
-                                    radius: 50,
-                                  ),
-                                  Text(
-                                    favItemList[index].productName,
-                                    style: TextStyle(fontSize: 15),
-                                  ),
-                                  Text(
-                                    favItemList[index].categoryType,
-                                    style:
-                                        TextStyle(fontStyle: FontStyle.italic),
-                                  ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: <Widget>[
-                                      Text(
-                                          'Rs ${favItemList[index].productSp}'),
-                                      SizedBox(
-                                        width: 5,
-                                      ),
-                                      Text(
-                                        '${favItemList[index].productMrp}',
-                                        style: TextStyle(
-                                            color: Colors.grey[700],
-                                            decoration:
-                                                TextDecoration.lineThrough),
-                                      ),
-                                      SizedBox(
-                                        width: 5,
-                                      ),
-                                      Text(
-                                        '${discountPer(favItemList[index].productMrp, favItemList[index].productSp)}% off',
-                                        style: TextStyle(
-                                            color: Colors.lightGreen[300]),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                              child: InkWell(
+                                onTap: () {
+                                  Navigator.of(context)
+                                      .push(MaterialPageRoute(builder: (_) {
+                                    return ProductScreen(
+                                      categoryType:
+                                          favItemList[index].categoryType,
+                                    );
+                                  }));
+                                },
+                                child: Column(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: <Widget>[
+                                    CircleAvatar(
+                                      backgroundColor: Colors.grey[300],
+                                      backgroundImage: NetworkImage(
+                                          favItemList[index].productImage),
+                                      radius: 50,
+                                    ),
+                                    Text(
+                                      favItemList[index].productName,
+                                      style: TextStyle(fontSize: 15),
+                                    ),
+                                    Text(
+                                      favItemList[index].categoryType,
+                                      style: TextStyle(
+                                          fontStyle: FontStyle.italic),
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: <Widget>[
+                                        Text(
+                                            'Rs ${favItemList[index].productSp}'),
+                                        SizedBox(
+                                          width: 5,
+                                        ),
+                                        Text(
+                                          '${favItemList[index].productMrp}',
+                                          style: TextStyle(
+                                              color: Colors.grey[700],
+                                              decoration:
+                                                  TextDecoration.lineThrough),
+                                        ),
+                                        SizedBox(
+                                          width: 5,
+                                        ),
+                                        Text(
+                                          '${discountPer(favItemList[index].productMrp, favItemList[index].productSp)}% off',
+                                          style: TextStyle(
+                                              color: Colors.lightGreen[300]),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),

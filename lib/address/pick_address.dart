@@ -5,7 +5,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shop/database/address_helper.dart';
-import 'package:shop/drawer/my_address_screen.dart';
+import 'package:shop/address/my_address_screen.dart';
 import 'package:shop/models/address_model.dart';
 import 'package:shop/payment/payment_page.dart';
 import 'package:shop/utils/strings.dart';

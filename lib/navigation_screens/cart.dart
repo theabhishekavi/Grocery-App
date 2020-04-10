@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shop/Screens/order_checkout_screen.dart';
-import 'package:shop/drawer/my_address_screen.dart';
+import 'package:shop/address/my_address_screen.dart';
 import 'package:shop/login/login_screen.dart';
 import 'package:shop/models/cart_items.dart';
 import 'package:shop/utils/strings.dart';

@@ -1,24 +1,25 @@
 import 'dart:math';
 
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shop/Screens/order_checkout_screen.dart';
+import 'package:shop/Screens/product_dialogs.dart';
 import 'package:shop/Screens/product_screen.dart';
 import 'package:shop/database/cartTable_helper.dart';
 import 'package:shop/database/favourite_helper.dart';
-import 'package:shop/drawer/my_address_screen.dart';
+import 'package:shop/address/my_address_screen.dart';
 import 'package:shop/login/login_screen.dart';
 import 'package:shop/models/cart_items.dart';
 import 'package:shop/models/favourite_items.dart';
 import 'package:shop/models/product_quantity_variant.dart';
-import 'package:shop/models/product_type.dart';
 import 'package:shop/utils/strings.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   static const routeName = '/ProductDetailScreenRouteName';
-  ProductTight productTight;
-  List<dynamic> productTightList;
+  final ProductTight productTight;
+  final List<dynamic> productTightList;
   ProductDetailScreen({this.productTight, this.productTightList});
 
   @override
@@ -35,10 +36,56 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   SharedPreferences sharedPreferences;
+  DatabaseReference databaseReference = FirebaseDatabase.instance.reference();
   bool isLoggedIN;
+
+  int currentRating = 0;
+  int databaseRating = 0;
+
+  bool isDatabaseRatingLoaded = false;
 
   Future<void> initializeSharedPreferences() async {
     sharedPreferences = await SharedPreferences.getInstance();
+    isLoggedIN = sharedPreferences.getBool(StringKeys.isLoggedIn);
+    if(isLoggedIN){
+      await getRatingFromFirebase();
+      if(databaseRating!=0){
+        currentRating = databaseRating;
+      }
+    }
+  }
+
+  Future<void> getRatingFromFirebase() async {
+    if (isLoggedIN) {
+      String userId = sharedPreferences.getString(StringKeys.userId);
+      await databaseReference
+          .child('users')
+          .child(userId)
+          .child('ratings')
+          .child('${widget.productTight.productName}')
+          .once()
+          .then((DataSnapshot snapshot) {
+            Map<dynamic,dynamic> map = snapshot.value;
+            if(map!=null){
+              databaseRating = map['star_count'];
+            }
+          });
+    }
+  }
+
+  @override
+  void dispose() async {
+    super.dispose();
+    if (isLoggedIN && currentRating != 0 && currentRating!=databaseRating) {
+      print('dispose ran');
+      String userId = sharedPreferences.getString(StringKeys.userId);
+      await databaseReference
+          .child('users')
+          .child(userId)
+          .child('ratings')
+          .child("${widget.productTight.productName}")
+          .set({"star_count": currentRating});
+    }
   }
 
   @override
@@ -49,13 +96,28 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       }
     }
     initializeSharedPreferences().then((_) {
-      setState(() {});
+      setState(() {
+        isDatabaseRatingLoaded = true;
+      });
     });
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+     Widget loadingIndicator = Container(
+      width: 40,
+      height: 40,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Center(
+          child: CircularProgressIndicator(
+            valueColor: new AlwaysStoppedAnimation<Color>(
+                Theme.of(context).primaryColor),
+          ),
+        ),
+      ),
+    );
     return WillPopScope(
       onWillPop: () async {
         Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) {
@@ -227,17 +289,149 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         fontSize: 16,
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(right: 10.0),
-                      child: Row(
-                        children: <Widget>[
-                          Icon(Icons.star_border),
-                          Icon(Icons.star_border),
-                          Icon(Icons.star_border),
-                          Icon(Icons.star_border),
-                          Icon(Icons.star_border),
-                        ],
-                      ),
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.only(right: 20.0),
+                          child: (isDatabaseRatingLoaded==false)?loadingIndicator:Row(
+                            children: <Widget>[
+                              Container(
+                                width: 25,
+                                child: IconButton(
+                                  icon: (currentRating >= 1)
+                                      ? Icon(
+                                          Icons.star,
+                                          color: Theme.of(context).primaryColor,
+                                        )
+                                      : Icon(
+                                          Icons.star_border,
+                                        ),
+                                  onPressed: () {
+                                    if (isLoggedIN) {
+                                      currentRating = 1;
+                                      setState(() {});
+                                    } else {
+                                      Fluttertoast.showToast(
+                                          msg:
+                                              'You need to sign in to rate this product');
+                                    }
+                                  },
+                                ),
+                              ),
+                              Container(
+                                width: 25,
+                                child: IconButton(
+                                  icon: (currentRating >= 2)
+                                      ? Icon(
+                                          Icons.star,
+                                          color: Theme.of(context).primaryColor,
+                                        )
+                                      : Icon(
+                                          Icons.star_border,
+                                        ),
+                                  onPressed: () {
+                                    if (isLoggedIN) {
+                                      currentRating = 2;
+                                      setState(() {});
+                                    } else {
+                                      Fluttertoast.showToast(
+                                          msg:
+                                              'You need to sign in to rate this product');
+                                    }
+                                  },
+                                ),
+                              ),
+                              Container(
+                                width: 25,
+                                child: IconButton(
+                                  icon: (currentRating >= 3)
+                                      ? Icon(
+                                          Icons.star,
+                                          color: Theme.of(context).primaryColor,
+                                        )
+                                      : Icon(
+                                          Icons.star_border,
+                                        ),
+                                  onPressed: () {
+                                    if (isLoggedIN) {
+                                      currentRating = 3;
+                                      setState(() {});
+                                    } else {
+                                      Fluttertoast.showToast(
+                                          msg:
+                                              'You need to sign in to rate this product');
+                                    }
+                                  },
+                                ),
+                              ),
+                              Container(
+                                width: 25,
+                                child: IconButton(
+                                  icon: (currentRating >= 4)
+                                      ? Icon(
+                                          Icons.star,
+                                          color: Theme.of(context).primaryColor,
+                                        )
+                                      : Icon(
+                                          Icons.star_border,
+                                        ),
+                                  onPressed: () {
+                                    if (isLoggedIN) {
+                                      currentRating = 4;
+                                      setState(() {});
+                                    } else {
+                                      Fluttertoast.showToast(
+                                          msg:
+                                              'You need to sign in to rate this product');
+                                    }
+                                  },
+                                ),
+                              ),
+                              Container(
+                                width: 25,
+                                child: IconButton(
+                                  icon: (currentRating >= 5)
+                                      ? Icon(
+                                          Icons.star,
+                                          color: Theme.of(context).primaryColor,
+                                        )
+                                      : Icon(
+                                          Icons.star_border,
+                                        ),
+                                  onPressed: () {
+                                    if (isLoggedIN) {
+                                      currentRating = 5;
+                                      setState(() {});
+                                    } else {
+                                      Fluttertoast.showToast(
+                                          msg:
+                                              'You need to sign in to rate this product');
+                                    }
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // (currentRating != 0)
+                        //     ? InkWell(
+                        //         onTap: () {
+                        //           ProductDialog productDialog = ProductDialog();
+                        //           productDialog.reviewDialog(context);
+                        //         },
+                        //         child: Text(
+                        //           'Add your Review',
+                        //           style: TextStyle(
+                        //             color: Colors.blue,
+                        //             fontSize: 16,
+                        //           ),
+                        //         ),
+                        //       )
+                        //     : Padding(
+                        //         padding: const EdgeInsets.all(0.0),
+                        //       ),
+                      ],
                     ),
                   ],
                 ),
@@ -245,26 +439,42 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               Divider(),
               Padding(
                 padding: const EdgeInsets.only(left: 8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Text(
-                      'Questions & Answers',
-                      style: TextStyle(
-                        fontSize: 16,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(right: 10.0),
-                      child: Text(
-                        'Ask a Question',
+                child: InkWell(
+                  onTap: () {
+                    isLoggedIN =
+                        sharedPreferences.getBool(StringKeys.isLoggedIn);
+                    if (isLoggedIN) {
+                      String userId =
+                          sharedPreferences.getString(StringKeys.userId);
+                      ProductDialog productDialog = ProductDialog();
+                      productDialog.askQuestionDialog(
+                          context, userId, widget.productTight.productName);
+                    } else {
+                      Fluttertoast.showToast(
+                          msg: "To ask a question,first you need to log in");
+                    }
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Text(
+                        'Questions & Answers',
                         style: TextStyle(
-                          color: Colors.blue,
                           fontSize: 16,
                         ),
                       ),
-                    ),
-                  ],
+                      Padding(
+                        padding: const EdgeInsets.only(right: 10.0),
+                        child: Text(
+                          'Ask a Question',
+                          style: TextStyle(
+                            color: Colors.blue,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               Divider(
@@ -432,6 +642,22 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       ),
     );
   }
+
+  // @override
+  // void didUpdateWidget(Widget oldWidget){
+  //   super.didUpdateWidget(oldWidget);
+  //   print('it rannn');
+  // }
+
+  // @override
+  // void didChangeAppLifecycleState(AppLifecycleState state) {
+  //   super.didChangeAppLifecycleState(state);
+  //   print(state);
+  //   if (state == AppLifecycleState.paused ||
+  //       state == AppLifecycleState.detached || state == AppLifecycleState.inactive) {
+  //     print('state ran');
+  //   }
+  // }
 
   Future<void> _insertFav(FavouriteItems favouriteItems) async {
     await favouriteHelper.insertFavouriteItem(favouriteItems);

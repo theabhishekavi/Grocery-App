@@ -1,4 +1,3 @@
-import 'dart:collection';
 import 'dart:math';
 
 import 'package:firebase_database/firebase_database.dart';
@@ -6,12 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:shop/drawer/my_address_screen.dart';
+import 'package:shop/address/my_address_screen.dart';
 import 'package:shop/login/logout_utils.dart';
 import 'package:shop/models/profile_model.dart';
 import 'package:shop/orders/my_order_screen.dart';
 import 'package:shop/database/address_helper.dart';
 import 'package:shop/models/address_model.dart';
+import 'package:shop/profile/question_answer.dart';
+import 'package:shop/profile/ratings.dart';
 import 'package:shop/utils/strings.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -408,7 +409,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: Text(
-                                    'My Reviews',
+                                    'My Ratings',
                                     style: TextStyle(
                                       color: Colors.black87,
                                       fontSize: 17,
@@ -422,21 +423,85 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     color: Colors.black87,
                                   ),
                                 ),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: <Widget>[
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                          top: 8.0, bottom: 8.0, right: 20.0),
-                                      child: Text(
-                                        'VIEW YOUR REVIEWS',
-                                        style: TextStyle(
-                                          color: Colors.blue,
-                                          fontSize: 14,
+                                InkWell(
+                                  onTap: () {
+                                    // Fluttertoast.showToast(msg: 'tapped');
+                                   Navigator.of(context)
+                                        .push(MaterialPageRoute(builder: (_) {
+                                      return MyRatings();
+                                    }));
+                                  },
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: <Widget>[
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                            top: 8.0, bottom: 8.0, right: 20.0),
+                                        child: Text(
+                                          'VIEW YOUR RATINGS',
+                                          style: TextStyle(
+                                            color: Colors.blue,
+                                            fontSize: 14,
+                                          ),
                                         ),
                                       ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Container(
+                            width: double.infinity,
+                            height: 110,
+                            color: Colors.white,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: <Widget>[
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(
+                                    'Question & Answers',
+                                    style: TextStyle(
+                                      color: Colors.black87,
+                                      fontSize: 17,
                                     ),
-                                  ],
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                      left: 20.0, right: 20.0),
+                                  child: Divider(
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                InkWell(
+                                  onTap: () {
+                                    Navigator.of(context)
+                                        .push(MaterialPageRoute(builder: (_) {
+                                      return QuestionAnswer();
+                                    }));
+                                  },
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: <Widget>[
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                            top: 8.0, bottom: 8.0, right: 20.0),
+                                        child: Text(
+                                          'VIEW Q&A',
+                                          style: TextStyle(
+                                            color: Colors.blue,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ],
                             ),

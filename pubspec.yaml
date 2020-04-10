@@ -72,6 +72,7 @@ flutter:
   assets:
    - assets/images/splash.png
    - assets/images/Logo.png
+   - assets/images/menu icon.jpg
    - assets/offer_images/o_image1.jpg
    - assets/offer_images/o_image2.jpg
    - assets/offer_images/o_image3.jpg

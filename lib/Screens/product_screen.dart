@@ -14,7 +14,7 @@ class ProductScreen extends StatefulWidget {
   String categoryName = "";
   ProductScreen({this.categoryType, this.categoryName});
 
-  ProductScreen.fromType({this.categoryType});
+  ProductScreen.fromType({this.categoryType}); //i think this is unnecessary
 
   @override
   _ProductScreenState createState() => _ProductScreenState();
@@ -123,14 +123,16 @@ class _ProductScreenState extends State<ProductScreen> {
     super.initState();
 
     getAllData().then((_) {
-      setState(() {
-        productList.sort((one,two){
-          return one.productName.compareTo(two.productName);
+      if (this.mounted) {
+        setState(() {
+          productList.sort((one, two) {
+            return one.productName.compareTo(two.productName);
+          });
+          loadDataFromFirebase = true;
+          cartItemList = cartItemList;
+          favItemList = favItemList;
         });
-        loadDataFromFirebase = true;
-        cartItemList = cartItemList;
-        favItemList = favItemList;
-      });
+      }
     });
   }
 
@@ -158,20 +160,20 @@ class _ProductScreenState extends State<ProductScreen> {
         children: <Widget>[
           Center(
             child: Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(10.0),
               child: (widget.categoryName == null)
                   ? Text(
                       '${widget.categoryType}(All Sub Categories)',
                       style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w300,
                       ),
                     )
                   : Text(
                       widget.categoryName,
                       style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w300,
                       ),
                     ),
             ),
@@ -294,7 +296,8 @@ class _ProductScreenState extends State<ProductScreen> {
                                       ),
                                     ),
                                     SizedBox(
-                                      width: MediaQuery.of(context).size.width/7,
+                                      width:
+                                          MediaQuery.of(context).size.width / 7,
                                       child: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.end,
@@ -681,7 +684,8 @@ class _ProductScreenState extends State<ProductScreen> {
 
                 List<dynamic> productval1 = val1['products'];
                 for (int i = 1; i < productval1.length; i++) {
-                  productName = productval1[i]['product_name'];
+                  if(productval1[i]!=null){
+                    productName = productval1[i]['product_name'];
                   productImage = productval1[i]['product_image'];
                   productDetails = productval1[i]['product_details'];
                   if (productval1[i]['product_quantity'] is String) {
@@ -735,6 +739,8 @@ class _ProductScreenState extends State<ProductScreen> {
                     );
                     // productList.add(productLoose);
                   }
+                  }
+                  
                 }
               }
             }

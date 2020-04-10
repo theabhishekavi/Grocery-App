@@ -1,4 +1,9 @@
+import 'dart:collection';
+
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shop/models/order_type.dart';
 
 class OrderDetailScreen extends StatefulWidget {
@@ -12,6 +17,49 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   int discountPer(int mrp, int sp) {
     double res = (mrp - sp) / mrp * 100.0;
     return res.round();
+  }
+
+  DatabaseReference databaseReference = FirebaseDatabase.instance.reference();
+
+  String databaseKeyForUser;
+  String databaseKeyForAdmin;
+
+  @override
+  void initState() {
+    super.initState();
+    getDatabaseReference().then((_) {
+      if (this.mounted) setState(() {});
+    });
+  }
+
+  Future<void> getDatabaseReference() async {
+    await databaseReference
+        .child("users")
+        .child(widget.orderModel.userId)
+        .child("orders")
+        .child("active orders")
+        .once()
+        .then((DataSnapshot snapshot) {
+      LinkedHashMap<dynamic, dynamic> map = snapshot.value;
+      map.forEach((key, value) {
+        LinkedHashMap<dynamic, dynamic> map2 = value;
+        if (map2.containsKey(widget.orderModel.orderId))
+          databaseKeyForUser = key;
+      });
+    });
+
+    await databaseReference
+        .child("orders")
+        .child("active orders")
+        .once()
+        .then((DataSnapshot snapshot) {
+      LinkedHashMap<dynamic, dynamic> map = snapshot.value;
+      map.forEach((key, value) {
+        LinkedHashMap<dynamic, dynamic> map2 = value;
+        if (map2.containsKey(widget.orderModel.orderId))
+          databaseKeyForAdmin = key;
+      });
+    });
   }
 
   @override
@@ -223,17 +271,302 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               (widget.orderModel.orderIsActive &&
                       widget.orderModel.delivered == false)
                   ? Center(
-                    child: RaisedButton(
-                        onPressed: () {},
-                        child: Text("CANCEL ORDER",style: TextStyle(color: Colors.white),),
+                      child: RaisedButton(
+                        onPressed: () {
+                          cancelOrder(context);
+                        },
+                        child: Text(
+                          "CANCEL ORDER",
+                          style: TextStyle(color: Colors.white),
+                        ),
                         color: Theme.of(context).accentColor,
                       ),
-                  )
-                  : Container()
+                    )
+                  : Container(),
+              (widget.orderModel.delivered == false &&
+                      widget.orderModel.orderIsActive == false)
+                  ? Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Center(
+                        child: Text(
+                          'Order Cancelled',
+                          style: TextStyle(
+                              fontSize: 20,
+                              color: Theme.of(context).accentColor),
+                        ),
+                      ),
+                    )
+                  : Container(),
             ],
           ),
         ),
       ),
     );
+  }
+
+  Future<void> cancelOrder(BuildContext context) async {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return new AlertDialog(
+            title: Text(
+              'Are you sure, you want to cancel this order?',
+              style: TextStyle(fontSize: 17),
+            ),
+            content: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: <Widget>[
+                RaisedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text(
+                    "NO",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  color: Theme.of(context).primaryColor,
+                ),
+                RaisedButton(
+                  onPressed: () async {
+                    if (databaseKeyForUser != null &&
+                        databaseKeyForAdmin != null) {
+                      bool deliveredStatus = true;
+                      Fluttertoast.showToast(
+                        msg: "Order Cancellation In Progress",
+                      );
+                      await databaseReference
+                          .child("users")
+                          .child(widget.orderModel.userId)
+                          .child("orders")
+                          .child("active orders")
+                          .child(databaseKeyForUser)
+                          .child(widget.orderModel.orderId)
+                          .child("delivered")
+                          .once()
+                          .then((DataSnapshot snapshot) {
+                        deliveredStatus = snapshot.value;
+                      });
+
+                      if (widget.orderModel.prepaid) {
+                        //Prepaid Order need to select a refund UPId
+                        Navigator.of(context).pop();
+                        refundPrepaidDialog(context);
+                      } else {
+                        if (deliveredStatus == false) {
+                          await databaseReference
+                              .child("users")
+                              .child(widget.orderModel.userId)
+                              .child("orders")
+                              .child("active orders")
+                              .child(databaseKeyForUser)
+                              .child(widget.orderModel.orderId)
+                              .child("orderIsActive")
+                              .set(false);
+
+                          await databaseReference
+                              .child("orders")
+                              .child("active orders")
+                              .child(databaseKeyForAdmin)
+                              .child(widget.orderModel.orderId)
+                              .child("orderIsActive")
+                              .set(false);
+
+                          var oldValue;
+                          await databaseReference
+                              .child("orders")
+                              .child("active orders")
+                              .child(databaseKeyForAdmin)
+                              .once()
+                              .then((DataSnapshot snapshot) {
+                            oldValue = snapshot.value;
+                          });
+                          await databaseReference
+                              .child("orders")
+                              .child("active orders")
+                              .child(databaseKeyForAdmin)
+                              .remove();
+
+                          await databaseReference
+                              .child('orders')
+                              .child('cancel orders')
+                              .push()
+                              .set(oldValue);
+
+                          Fluttertoast.showToast(msg: "Order Cancelled");
+                          Navigator.of(context).pop();
+                          Navigator.of(context).pushReplacement(
+                              new MaterialPageRoute(builder: (_) {
+                            widget.orderModel.orderIsActive = false;
+                            return OrderDetailScreen(
+                              orderModel: widget.orderModel,
+                            );
+                          }));
+                        } else
+                          Fluttertoast.showToast(
+                              msg: "Order already delivered");
+                      }
+                    }
+                  },
+                  child: Text(
+                    "YES",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  color: Theme.of(context).primaryColor,
+                ),
+              ],
+            ),
+          );
+        });
+  }
+
+  Future<void> refundPrepaidDialog(BuildContext context) async {
+    TextEditingController upiController = TextEditingController(text: "");
+    showDialog(
+        context: context,
+        builder: (context) {
+          return new AlertDialog(
+            title: Center(
+              child: Text('Refund Amount : Rs.${widget.orderModel.amount}'),
+            ),
+            content: Container(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Text('Accepted UPI: (Paytm/PhonePe/GooglePay)'),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
+                      height: 60,
+                      decoration: BoxDecoration(
+                          border: Border.all(
+                              color: Theme.of(context).primaryColor)),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: TextField(
+                          controller: upiController,
+                          decoration: InputDecoration(
+                              hintText: "*****@paytm",
+                              hintStyle: TextStyle(color: Colors.black54),
+                              border: InputBorder.none),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Text(
+                      "Note: Your Amount will be credited in 3-4 business days"),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: RaisedButton(
+                      onPressed: () async {
+                        SystemChannels.textInput.invokeMethod('TextInput.hide');
+                        if (upiController.text.isEmpty) {
+                          Fluttertoast.showToast(
+                              msg:
+                                  "First enter your Paytm/Phone/GooglePay Upi");
+                        } else if (!upiController.text.contains('@') ||
+                            upiController.text.length <= 4) {
+                          Fluttertoast.showToast(msg: 'Enter a valid Upi');
+                        } else {
+                          Fluttertoast.showToast(msg: 'Please Wait');
+                          bool deliveredStatus = true;
+                          await databaseReference
+                              .child("users")
+                              .child(widget.orderModel.userId)
+                              .child("orders")
+                              .child("active orders")
+                              .child(databaseKeyForUser)
+                              .child(widget.orderModel.orderId)
+                              .child("delivered")
+                              .once()
+                              .then((DataSnapshot snapshot) {
+                            deliveredStatus = snapshot.value;
+                          });
+                          if (deliveredStatus == false) {
+                            await databaseReference
+                                .child("users")
+                                .child(widget.orderModel.userId)
+                                .child("orders")
+                                .child("active orders")
+                                .child(databaseKeyForUser)
+                                .child(widget.orderModel.orderId)
+                                .child("orderIsActive")
+                                .set(false);
+                            await databaseReference
+                                .child("users")
+                                .child(widget.orderModel.userId)
+                                .child("orders")
+                                .child("active orders")
+                                .child(databaseKeyForUser)
+                                .child(widget.orderModel.orderId)
+                                .child("refundUpi")
+                                .set(upiController.text);
+
+
+                                //admin
+                            await databaseReference
+                              .child("orders")
+                              .child("active orders")
+                              .child(databaseKeyForAdmin)
+                              .child(widget.orderModel.orderId)
+                              .child("orderIsActive")
+                              .set(false);
+
+                            await databaseReference
+                                .child("orders")
+                                .child("active orders")
+                                .child(databaseKeyForAdmin)
+                                .child(widget.orderModel.orderId)
+                                .child("refundUpi")
+                                .set(upiController.text);
+                            
+                            var oldValue;
+                          await databaseReference
+                              .child("orders")
+                              .child("active orders")
+                              .child(databaseKeyForAdmin)
+                              .once()
+                              .then((DataSnapshot snapshot) {
+                            oldValue = snapshot.value;
+                          });
+                          await databaseReference
+                              .child("orders")
+                              .child("active orders")
+                              .child(databaseKeyForAdmin)
+                              .remove();
+
+                          await databaseReference
+                              .child('orders')
+                              .child('cancel orders')
+                              .push()
+                              .set(oldValue);
+
+                            
+                            Fluttertoast.showToast(msg: "Order Cancelled");
+                            Navigator.of(context).pop();
+                            Navigator.of(context).pushReplacement(
+                                new MaterialPageRoute(builder: (_) {
+                              widget.orderModel.orderIsActive = false;
+                              return OrderDetailScreen(
+                                orderModel: widget.orderModel,
+                              );
+                            }));
+                          } else {
+                            Fluttertoast.showToast(
+                                msg: "Order already delivered");
+                          }
+                        }
+                      },
+                      child: Text(
+                        'Confirm',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      color: Theme.of(context).primaryColor,
+                    ),
+                  )
+                ],
+              ),
+            ),
+          );
+        });
   }
 }
