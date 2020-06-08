@@ -5,7 +5,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthProvider {
   FirebaseAuth _auth = FirebaseAuth.instance;
-
+  
   Future<bool> signInWithEmail(String email, String password) async {
     try {
       AuthResult authResult = await _auth.signInWithEmailAndPassword(
@@ -21,20 +21,21 @@ class AuthProvider {
     }
   }
 
-  Future<bool> signInWithGoogle() async {
+  Future<AuthResultWithEmailAndPhoto> signInWithGoogle() async {
     try {
-      GoogleSignIn _googleSignIn = GoogleSignIn();
+      GoogleSignIn _googleSignIn = GoogleSignIn(scopes:<String>['email','https://www.googleapis.com/auth/userinfo.profile'] ); 
       GoogleSignInAccount account = await _googleSignIn.signIn();
-      if (account == null) return false;
+      if (account == null) return AuthResultWithEmailAndPhoto(authResult: false,emailId: "",photoUrl: "");
       AuthResult authResult = await _auth.signInWithCredential(
         GoogleAuthProvider.getCredential(
             idToken: (await account.authentication).idToken,
             accessToken: (await account.authentication).accessToken),
       );
-      if (authResult.user == null) return false;
-      return true;
+      if (authResult.user == null) return AuthResultWithEmailAndPhoto(authResult: false,emailId: "",photoUrl: "");
+       print('${account.displayName} and ${account.email} ${account.photoUrl}');
+      return AuthResultWithEmailAndPhoto(authResult: true,emailId: account.email,photoUrl: account.photoUrl);
     } catch (e) {
-      return false;
+      return AuthResultWithEmailAndPhoto(authResult: false,emailId: "",photoUrl: "");
     }
   }
 
@@ -92,4 +93,11 @@ class AuthProvider {
       return false;
     }
   }
+}
+class AuthResultWithEmailAndPhoto{
+  final String emailId, photoUrl;
+  final bool authResult;
+
+  AuthResultWithEmailAndPhoto({this.authResult,this.emailId,this.photoUrl});
+
 }

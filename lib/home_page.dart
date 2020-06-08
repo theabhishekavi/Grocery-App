@@ -2,8 +2,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shop/Screens/search_products.dart';
 import 'package:shop/database/close_sql_database.dart';
 import 'package:shop/drawer/drawer_items.dart';
+import 'package:shop/drawer/favourite_screen.dart';
 import 'package:shop/models/profile_model.dart';
 import './login/logout_utils.dart';
 import './utils/strings.dart';
@@ -14,6 +16,9 @@ import './navigation_screens/offers.dart';
 
 class HomePage extends StatefulWidget {
   static const routeName = '/homePageRoute';
+  final String googleEmailId, googlePhotoUrl;
+  final bool openCart;
+  HomePage({this.googleEmailId, this.googlePhotoUrl,this.openCart});
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -59,7 +64,13 @@ class _HomePageState extends State<HomePage> {
     _cartPage = CartPage();
 
     pages = [_myHomePage, _categoriesPage, _offersPage, _cartPage];
+    if(widget.openCart==null)
     currentPage = _myHomePage;
+    else{
+      currentPage = _cartPage;
+      _selectedIndex =3;
+    }
+    
 
     loginState();
     super.initState();
@@ -74,8 +85,8 @@ class _HomePageState extends State<HomePage> {
       if (_firebaseUser.providerData[1].providerId == 'google.com') {
         _providerName = StringKeys.providerKeyGoogle;
         _providerDisplayName = _firebaseUser.displayName;
-        _providerEmail = _firebaseUser.email;
-        _providerPhotoUrl = _firebaseUser.photoUrl;
+        _providerEmail = widget.googleEmailId;
+        _providerPhotoUrl = widget.googlePhotoUrl;
       } else if (_firebaseUser.providerData[1].providerId == 'facebook.com') {
         _providerName = StringKeys.providerKeyFacebook;
         _providerDisplayName = _firebaseUser.displayName;
@@ -106,11 +117,12 @@ class _HomePageState extends State<HomePage> {
         .once()
         .then((DataSnapshot snapshot) {
       Map<dynamic, dynamic> values = snapshot.value;
-      values.forEach((valuesKey, valuesValue) {
-        if (valuesKey == 'profile') {
-          profileAlreadyPresent = true;
-        }
-      });
+      if (values != null)
+        values.forEach((valuesKey, valuesValue) {
+          if (valuesKey == 'profile') {
+            profileAlreadyPresent = true;
+          }
+        });
     });
     if (!profileAlreadyPresent) {
       ProfileModel profileModel = ProfileModel(
@@ -209,19 +221,30 @@ class _HomePageState extends State<HomePage> {
               },
             ),
             actions: <Widget>[
-              // IconButton(
-              //   icon: Icon(Icons.search),
-              //   onPressed: () {},
-              // ),
               IconButton(
-                icon: Icon(
-                  Icons.power_settings_new,
-                  size: 30,
-                ),
+                icon: Icon(Icons.search),
                 onPressed: () {
-                  _logoutUtils.logout(context, _preferences);
+                  Navigator.of(context).pushNamed(SearchProducts.routeName);
                 },
               ),
+              IconButton(
+                icon: Icon(
+                  Icons.favorite,
+                  color: Colors.white,
+                ),
+                onPressed: () {
+                  Navigator.of(context).pushNamed(FavouritePage.routeName);
+                },
+              )
+              // IconButton(
+              //   icon: Icon(
+              //     Icons.power_settings_new,
+              //     size: 30,
+              //   ),
+              //   onPressed: () {
+              //     _logoutUtils.logout(context, _preferences);
+              //   },
+              // ),
             ],
             title: Text('Anil Store'),
           ),

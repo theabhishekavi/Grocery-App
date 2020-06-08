@@ -292,14 +292,19 @@ class _LoginPageState extends State<LoginPage> {
                                       });
                                       await AuthProvider()
                                           .signInWithGoogle()
-                                          .then((val) {
-                                        if (val) {
+                                          .then((auth) {
+                                        if (auth.authResult) {
                                           Fluttertoast.showToast(
                                               msg:
                                                   'Google Signed In Successfully');
-                                          Navigator.of(context)
-                                              .pushReplacementNamed(
-                                                  HomePage.routeName);
+                                          print(auth.emailId);
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder: (_) {
+                                                return HomePage(googleEmailId: auth.emailId,googlePhotoUrl: auth.photoUrl,);
+                                              },
+                                            ),
+                                          );
                                         } else {
                                           Fluttertoast.showToast(
                                               msg: 'Google Sign In Failed');
@@ -370,7 +375,7 @@ class _LoginPageState extends State<LoginPage> {
                                           });
                                         }
                                       });
-                                       setState(() {
+                                      setState(() {
                                         _loadState = false;
                                       });
                                     },

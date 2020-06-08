@@ -2,6 +2,8 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shop/drawer/about_us.dart';
+import 'package:shop/drawer/help_center.dart';
 import 'package:shop/login/login_screen.dart';
 import 'package:shop/login/logout_utils.dart';
 import 'package:shop/models/profile_model.dart';
@@ -135,27 +137,30 @@ class _DrawerItemsState extends State<DrawerItems> {
     return Drawer(
       child: ListView(
         children: <Widget>[
-         UserAccountsDrawerHeader(
-                  accountName: (_isLoggedIn && _providerDisplayName != null)
-                      ? Text('$_providerDisplayName',style: TextStyle(fontSize: 16),)
-                      : Text('Guest User'),
-                  accountEmail: (_isLoggedIn && _providerEmail != null)
-                      ? Text('$_providerEmail')
-                      : Text('Guest Email'),
-                  currentAccountPicture: CircleAvatar(
-                    backgroundColor: Colors.white,
-                    child: Text(
-                      (_isLoggedIn && _providerDisplayName != null)
-                          ? '${_providerDisplayName.substring(0, 1)}'
-                          : 'G',
-                      style: TextStyle(fontSize: 25.0),
-                    ),
-                  ),
-                ),
-              // : UserAccountsDrawerHeader(
-              //     accountEmail: Text(""),
-              //     accountName: Text(""),
-              //   ),
+          UserAccountsDrawerHeader(
+            accountName: (_isLoggedIn && _providerDisplayName != null)
+                ? Text(
+                    '$_providerDisplayName',
+                    style: TextStyle(fontSize: 16),
+                  )
+                : Text('Guest User'),
+            accountEmail: (_isLoggedIn && _providerEmail != null)
+                ? Text('$_providerEmail')
+                : Text('Guest Email'),
+            currentAccountPicture: CircleAvatar(
+              backgroundColor: Colors.white,
+              child: Text(
+                (_isLoggedIn && _providerDisplayName != null)
+                    ? '${_providerDisplayName.substring(0, 1)}'
+                    : 'G',
+                style: TextStyle(fontSize: 25.0),
+              ),
+            ),
+          ),
+          // : UserAccountsDrawerHeader(
+          //     accountEmail: Text(""),
+          //     accountName: Text(""),
+          //   ),
           ListTile(
               title: Text(
                 'My Account',
@@ -215,13 +220,21 @@ class _DrawerItemsState extends State<DrawerItems> {
             onTap: () => Navigator.of(context).pop(),
           ),
           ListTile(
-            title: Text(
-              'Need Help',
-              style: optionStyleDrawer,
-            ),
-            leading: Icon(Icons.help),
-            onTap: () => Navigator.of(context).pop(),
-          ),
+              title: Text(
+                'Need Help',
+                style: optionStyleDrawer,
+              ),
+              leading: Icon(Icons.help),
+              onTap: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) {
+                      return HelpCenter();
+                    },
+                  ),
+                );
+              }),
           ListTile(
             title: Text(
               'Share',
@@ -231,13 +244,17 @@ class _DrawerItemsState extends State<DrawerItems> {
             onTap: () => Navigator.of(context).pop(),
           ),
           ListTile(
-            title: Text(
-              'About',
-              style: optionStyleDrawer,
-            ),
-            leading: Icon(Icons.info),
-            onTap: () => Navigator.of(context).pop(),
-          ),
+              title: Text(
+                'About',
+                style: optionStyleDrawer,
+              ),
+              leading: Icon(Icons.info),
+              onTap: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).push(MaterialPageRoute(builder: (_) {
+                  return AboutUs();
+                }));
+              }),
           ListTile(
               title: Text(
                 'Logout',

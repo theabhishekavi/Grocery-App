@@ -119,17 +119,22 @@ class _CategoriesPageState extends State<CategoriesPage> {
   void initState() {
     super.initState();
     getFirebaseData().then((_) {
-      setState(() {
-        loadDataFromFirebase = true;
-      });
+      if (mounted)
+        setState(() {
+          loadDataFromFirebase = true;
+        });
     });
   }
 
   @override
   Widget build(BuildContext context) {
     Widget loadingIndicator = Container(
-      width: 120,
-      height: 120,
+      width: 45,
+      height: 45,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.white,
+      ),
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Center(
@@ -142,7 +147,10 @@ class _CategoriesPageState extends State<CategoriesPage> {
     );
 
     return (loadDataFromFirebase == false)
-        ? loadingIndicator
+        ? Padding(
+            padding: const EdgeInsets.only(top: 20.0),
+            child: Center(child: loadingIndicator),
+          )
         : ListView.builder(
             shrinkWrap: true,
             physics: ScrollPhysics(),
@@ -158,47 +166,97 @@ class _CategoriesPageState extends State<CategoriesPage> {
                         context,
                         categoriesList[index].categoryType,
                       ),
-                      child: Container(
-                        height: 200,
-                        width: double.infinity,
-                        child: Center(
-                          child: Stack(
-                            children: <Widget>[
-                              Container(
-                                width: double.infinity,
-                                height: 200,
-                                child: Opacity(
-                                  opacity: 0.6,
-                                  child: Image.network(
-                                    'https://d27zlipt1pllog.cloudfront.net/pub/media/catalog/product/j/o/joh0156.jpg',
-                                    fit: BoxFit.cover,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Container(
+                          height: 200,
+                          width: double.infinity,
+                          child: Center(
+                            child: Stack(
+                              children: <Widget>[
+                                Container(
+                                  width: double.infinity,
+                                  height: 200,
+                                  child: Opacity(
+                                    opacity: 0.4,
+                                    child: Image.network(
+                                      categoriesList[index].categoryTypeImage,
+                                      fit: BoxFit.cover,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              Center(
-                                child: Column(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: <Widget>[
-                                    Text(
-                                      categoriesList[index].categoryType,
-                                      style: TextStyle(
-                                          fontSize: 22,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    Column(
-                                      children: <Widget>[
-                                        Text(
-                                          '${categoriesList[index].categoryName1} \n ${categoriesList[index].categoryName2} \n ${categoriesList[index].categoryName3} \n ${categoriesList[index].categoryName4}',
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(fontSize: 17),
-                                        ),
-                                      ],
-                                    )
-                                  ],
+                                Center(
+                                  child: Column(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
+                                    children: <Widget>[
+                                      Text(
+                                        categoriesList[index].categoryType,
+                                        style: TextStyle(
+                                            fontSize: 22,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      Column(
+                                        children: <Widget>[
+                                          (categoriesList[index]
+                                                      .subCategoryList
+                                                      .length >=
+                                                  1)
+                                              ? Text(
+                                                  '${categoriesList[index].subCategoryList[0].categoryName}',
+                                                  textAlign: TextAlign.center,
+                                                  style: TextStyle(
+                                                      fontSize: 17,
+                                                      fontStyle:
+                                                          FontStyle.italic),
+                                                )
+                                              : Text(""),
+                                          (categoriesList[index]
+                                                      .subCategoryList
+                                                      .length >=
+                                                  2)
+                                              ? Text(
+                                                  '${categoriesList[index].subCategoryList[1].categoryName}',
+                                                  textAlign: TextAlign.center,
+                                                  style: TextStyle(
+                                                      fontSize: 17,
+                                                      fontStyle:
+                                                          FontStyle.italic),
+                                                )
+                                              : Text(""),
+                                          (categoriesList[index]
+                                                      .subCategoryList
+                                                      .length >=
+                                                  3)
+                                              ? Text(
+                                                  '${categoriesList[index].subCategoryList[2].categoryName}',
+                                                  textAlign: TextAlign.center,
+                                                  style: TextStyle(
+                                                      fontSize: 17,
+                                                      fontStyle:
+                                                          FontStyle.italic),
+                                                )
+                                              : Text(""),
+                                          (categoriesList[index]
+                                                      .subCategoryList
+                                                      .length >=
+                                                  4)
+                                              ? Text(
+                                                  '${categoriesList[index].subCategoryList[3].categoryName}',
+                                                  textAlign: TextAlign.center,
+                                                  style: TextStyle(
+                                                      fontSize: 17,
+                                                      fontStyle:
+                                                          FontStyle.italic),
+                                                )
+                                              : Text(""),
+                                        ],
+                                      )
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -212,7 +270,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
 
   Future<void> getFirebaseData() async {
     String catTypeName, catTypeImage;
-    String category1Name, category2Name, category3Name, category4Name;
+    // String category1Name, category2Name, category3Name, category4Name;
     await databaseReference
         .child('categories')
         .once()
@@ -222,30 +280,31 @@ class _CategoriesPageState extends State<CategoriesPage> {
         catTypeName = catTypeKey;
         catTypeImage = catTypevalue['cat_image'];
 
-        if (catTypeName == 'Baby Care') {
-          //subcategories(1 to 4)
-          for (int i = 1; i <= 4; i++) {
-            Map<dynamic, dynamic> val = catTypevalue['$i'];
-            if (i == 1) {
-              category1Name = val['category_name'];
-            } else if (i == 2) {
-              category2Name = val['category_name'];
-            } else if (i == 3) {
-              category3Name = val['category_name'];
-            } else if (i == 4) {
-              category4Name = val['category_name'];
-            }
-          }
-          CategoryModel categoryModel = CategoryModel(
-            categoryType: catTypeName,
-            categoryTypeImage: catTypeImage,
-            categoryName1: category1Name,
-            categoryName2: category2Name,
-            categoryName3: category3Name,
-            categoryName4: category4Name,
-          );
-          categoriesList.add(categoryModel);
+        //subcategories(1 to 4)
+        List<SubCategoryModel> subCategoryList = [];
+        for (int i = 1; i < catTypevalue.length; i++) {
+          Map<dynamic, dynamic> val = catTypevalue['$i'];
+
+          SubCategoryModel subCategoryModel = SubCategoryModel(
+              categoryName: val['category_name'],
+              categoryImage: val['category_image']);
+          subCategoryList.add(subCategoryModel);
+          // if (i == 1) {
+          //   category1Name = val['category_name'];
+          // } else if (i == 2) {
+          //   category2Name = val['category_name'];
+          // } else if (i == 3) {
+          //   category3Name = val['category_name'];
+          // } else if (i == 4) {
+          //   category4Name = val['category_name'];
+          // }
         }
+        CategoryModel categoryModel = CategoryModel(
+          categoryType: catTypeName,
+          categoryTypeImage: catTypeImage,
+          subCategoryList: subCategoryList,
+        );
+        categoriesList.add(categoryModel);
       });
     });
   }

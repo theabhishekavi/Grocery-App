@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shop/Screens/product_screen.dart';
+import 'package:shop/home_page.dart';
 import 'package:shop/models/favourite_items.dart';
 import '../database/favourite_helper.dart';
 
@@ -56,124 +57,160 @@ class _FavouritePageState extends State<FavouritePage> {
         actions: <Widget>[],
         title: Text('Favourites'),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: <Widget>[
-            // Padding(
-            //   padding: const EdgeInsets.only(top: 12.0, bottom: 15.0),
-            //   child: Text(
-            //     'FAVOURITE ITEMS',
-            //     textAlign: TextAlign.center,
-            //     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            //   ),
-            // ),
-
-            SingleChildScrollView(
-              child: GridView.builder(
-                  shrinkWrap: true,
-                  physics: ScrollPhysics(),
-                  itemCount: favItemList.length,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      childAspectRatio: 0.8, crossAxisCount: 2),
-                  itemBuilder: (ctx, index) {
-                    return Stack(
-                      children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Card(
-                            elevation: 5.0,
-                            color: Colors.grey[200],
-                            child: Padding(
-                              padding: const EdgeInsets.all(15.0),
-                              child: InkWell(
-                                onTap: () {
-                                  Navigator.of(context)
-                                      .push(MaterialPageRoute(builder: (_) {
-                                    return ProductScreen(
-                                      categoryType:
-                                          favItemList[index].categoryType,
-                                    );
-                                  }));
-                                },
-                                child: Column(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: <Widget>[
-                                    CircleAvatar(
-                                      backgroundColor: Colors.grey[300],
-                                      backgroundImage: NetworkImage(
-                                          favItemList[index].productImage),
-                                      radius: 50,
+      body: (favItemList.length == 0)
+          ? Center(
+              child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.max,
+              children: <Widget>[
+                Text(
+                  "Your Favourite list is Empty",
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                Text('Add products that you like in your favourite list'),
+                SizedBox(
+                  height: 5,
+                ),
+                Text('Review them and move to your cart anytime'),
+                SizedBox(
+                  height: 10,
+                ),
+                InkWell(
+                  onTap: () {
+                    Navigator.of(context).pushReplacementNamed(HomePage.routeName);
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Theme.of(context).primaryColor),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        "Shop Now",
+                        style: TextStyle(
+                            color: Theme.of(context).primaryColor,
+                            fontSize: 14),
+                      ),
+                    ),
+                  ),
+                )
+              ],
+            ))
+          : SingleChildScrollView(
+              child: Column(
+                children: <Widget>[
+                  SingleChildScrollView(
+                    child: GridView.builder(
+                        shrinkWrap: true,
+                        physics: ScrollPhysics(),
+                        itemCount: favItemList.length,
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            childAspectRatio: 0.8, crossAxisCount: 2),
+                        itemBuilder: (ctx, index) {
+                          return Stack(
+                            children: <Widget>[
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Card(
+                                  elevation: 5.0,
+                                  color: Colors.grey[200],
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(15.0),
+                                    child: InkWell(
+                                      onTap: () {
+                                        Navigator.of(context).push(
+                                            MaterialPageRoute(builder: (_) {
+                                          return ProductScreen(
+                                            categoryType:
+                                                favItemList[index].categoryType,
+                                          );
+                                        }));
+                                      },
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: <Widget>[
+                                          CircleAvatar(
+                                            backgroundColor: Colors.grey[300],
+                                            backgroundImage: NetworkImage(
+                                                favItemList[index]
+                                                    .productImage),
+                                            radius: 50,
+                                          ),
+                                          Text(
+                                            favItemList[index].productName,
+                                            style: TextStyle(fontSize: 15),
+                                          ),
+                                          Text(
+                                            favItemList[index].categoryType,
+                                            style: TextStyle(
+                                                fontStyle: FontStyle.italic),
+                                          ),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: <Widget>[
+                                              Text(
+                                                  'Rs ${favItemList[index].productSp}'),
+                                              SizedBox(
+                                                width: 5,
+                                              ),
+                                              Text(
+                                                '${favItemList[index].productMrp}',
+                                                style: TextStyle(
+                                                    color: Colors.grey[700],
+                                                    decoration: TextDecoration
+                                                        .lineThrough),
+                                              ),
+                                              SizedBox(
+                                                width: 5,
+                                              ),
+                                              Text(
+                                                '${discountPer(favItemList[index].productMrp, favItemList[index].productSp)}% off',
+                                                style: TextStyle(
+                                                    color:
+                                                        Colors.lightGreen[300]),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                    Text(
-                                      favItemList[index].productName,
-                                      style: TextStyle(fontSize: 15),
-                                    ),
-                                    Text(
-                                      favItemList[index].categoryType,
-                                      style: TextStyle(
-                                          fontStyle: FontStyle.italic),
-                                    ),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: <Widget>[
-                                        Text(
-                                            'Rs ${favItemList[index].productSp}'),
-                                        SizedBox(
-                                          width: 5,
-                                        ),
-                                        Text(
-                                          '${favItemList[index].productMrp}',
-                                          style: TextStyle(
-                                              color: Colors.grey[700],
-                                              decoration:
-                                                  TextDecoration.lineThrough),
-                                        ),
-                                        SizedBox(
-                                          width: 5,
-                                        ),
-                                        Text(
-                                          '${discountPer(favItemList[index].productMrp, favItemList[index].productSp)}% off',
-                                          style: TextStyle(
-                                              color: Colors.lightGreen[300]),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                                  ),
                                 ),
                               ),
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          top: 20,
-                          right: 20,
-                          child: InkWell(
-                            onTap: () {
-                              Fluttertoast.showToast(
-                                  msg: 'Item removed from Favourite list');
-                              _favouriteHelper.deleteFavouriteItem(
-                                  favItemList[index].productName +
-                                      favItemList[index].categoryType +
-                                      favItemList[index].productQuantity);
-                              favItemList.removeAt(index);
-                              setState(() {});
-                            },
-                            child: Icon(
-                              Icons.favorite,
-                              size: 25,
-                              color: Theme.of(context).accentColor,
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  }),
+                              Positioned(
+                                top: 20,
+                                right: 20,
+                                child: InkWell(
+                                  onTap: () {
+                                    Fluttertoast.showToast(
+                                        msg:
+                                            'Item removed from Favourite list');
+                                    _favouriteHelper.deleteFavouriteItem(
+                                        favItemList[index].productName +
+                                            favItemList[index].categoryType +
+                                            favItemList[index].productQuantity);
+                                    favItemList.removeAt(index);
+                                    setState(() {});
+                                  },
+                                  child: Icon(
+                                    Icons.favorite,
+                                    size: 25,
+                                    color: Theme.of(context).accentColor,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        }),
+                  ),
+                ],
+              ),
             ),
-          ],
-        ),
-      ),
     );
   }
 }

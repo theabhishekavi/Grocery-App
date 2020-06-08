@@ -3,6 +3,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shop/Screens/order_checkout_screen.dart';
 import 'package:shop/address/my_address_screen.dart';
+import 'package:shop/home_page.dart';
 import 'package:shop/login/login_screen.dart';
 import 'package:shop/models/cart_items.dart';
 import 'package:shop/utils/strings.dart';
@@ -85,10 +86,9 @@ class _CartPageState extends State<CartPage> {
                 List<String> defaultAddress = sharedPreferences
                     .getStringList(userId + StringKeys.defaultAddressKey);
                 if (defaultAddress == null) {
-                  Navigator.of(context).push(MaterialPageRoute(builder: (_){
+                  Navigator.of(context).push(MaterialPageRoute(builder: (_) {
                     return MyAddressScreen();
                   }));
-
                 } else {
                   Navigator.of(context).push(
                     MaterialPageRoute(
@@ -121,177 +121,238 @@ class _CartPageState extends State<CartPage> {
         ],
       ),
       body: SingleChildScrollView(
-        child: ListView.builder(
-          shrinkWrap: true,
-          physics: ScrollPhysics(),
-          itemCount: cartItemList.length,
-          itemBuilder: (ctx, index) {
-            return Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                children: <Widget>[
-                  ListTile(
-                    leading: Container(
-                      height: 40,
-                      width: 40,
-                      child: Image.network(cartItemList[index].pImage),
-                    ),
-                    title: Text(cartItemList[index].pName),
-                    subtitle: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Padding(
-                              padding:
-                                  const EdgeInsets.only(top: 4.0, bottom: 4.0),
-                              child: SizedBox(
-                                child: Text(cartItemList[index].pCategoryName),
-                                width: 120,
-                              ),
-                            ),
-                            Text('Quantity: ${cartItemList[index].pQuantity}'),
-                          ],
-                        ),
-                        InkWell(
-                          onTap: () {
-                            _delete(cartItemList[index].pName +
-                                cartItemList[index].pQuantity);
-                            Fluttertoast.showToast(
-                                msg: "Item removed from the cart");
-                            setState(() {
-                              cartItemList.removeAt(index);
-                              _checkoutPrice = calPrice(cartItemList);
-                            });
-                          },
-                          child: Icon(
-                            Icons.delete,
-                            color: Theme.of(context).accentColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                    trailing: Column(
-                      // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Text(
-                          'Rs ${cartItemList[index].pMrp * cartItemList[index].pCountOrdered}',
-                          style: TextStyle(
-                            color: Colors.grey[400],
-                            decoration: TextDecoration.lineThrough,
-                          ),
-                        ),
-                        Text(
-                          'Rs ${cartItemList[index].pSp * cartItemList[index].pCountOrdered}',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        Container(
+        child: (cartItemList.length == 0)
+            ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 200.0),
+                  child: Column(
+                    children: <Widget>[
+                      Container(
+                        width: 80,
+                        height: 80,
+                        child:
+                            Image.asset('assets/empty_images/empty_cart.jpeg'),
+                      ),
+                      SizedBox(
+                        height: 10,
+                      ),
+                      Text(
+                        "Your cart is Empty",
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(
+                        height: 10,
+                      ),
+                      InkWell(
+                        onTap: () {
+                          Navigator.of(context)
+                              .pushReplacementNamed(HomePage.routeName);
+                        },
+                        child: Container(
                           decoration: BoxDecoration(
-                            shape: BoxShape.rectangle,
                             border: Border.all(
-                                color: Theme.of(context).accentColor,
-                                width: 1.0),
+                                color: Theme.of(context).primaryColor),
                           ),
-                          width: 75,
-                          height: 20,
-                          child: Row(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              "Shop Now",
+                              style: TextStyle(
+                                  color: Theme.of(context).primaryColor,
+                                  fontSize: 14),
+                            ),
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              )
+            : ListView.builder(
+                shrinkWrap: true,
+                physics: ScrollPhysics(),
+                itemCount: cartItemList.length,
+                itemBuilder: (ctx, index) {
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      children: <Widget>[
+                        ListTile(
+                          leading: Container(
+                            height: 40,
+                            width: 40,
+                            child: Image.network(cartItemList[index].pImage),
+                          ),
+                          title: Text(cartItemList[index].pName),
+                          subtitle: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: <Widget>[
-                              InkWell(
-                                onTap: () {
-                                  if (cartItemList[index].pCountOrdered == 1) {
-                                    _delete(cartItemList[index].pName +
-                                        cartItemList[index].pQuantity);
-                                    setState(() {
-                                      cartItemList.removeAt(index);
-                                      _checkoutPrice = calPrice(cartItemList);
-                                    });
-                                  } else if (cartItemList[index].pCountOrdered >
-                                      1) {
-                                    CartItems x = new CartItems(
-                                      pImage: cartItemList[index].pImage,
-                                      pName: cartItemList[index].pName,
-                                      pCountOrdered:
-                                          cartItemList[index].pCountOrdered - 1,
-                                      pCategoryName:
-                                          cartItemList[index].pCategoryName,
-                                      pMrp: cartItemList[index].pMrp,
-                                      pSp: cartItemList[index].pSp,
-                                      pQuantity: cartItemList[index].pQuantity,
-                                      pAvailability:
-                                          cartItemList[index].pAvailability,
-                                    );
-                                    _update(x);
-                                    setState(() {
-                                      cartItemList[index].pCountOrdered--;
-                                      _checkoutPrice = calPrice(cartItemList);
-                                    });
-                                  }
-                                },
-                                child: Icon(
-                                  Icons.remove,
-                                  size: 18,
-                                  color: Theme.of(context).accentColor,
-                                ),
-                              ),
-                              VerticalDivider(
-                                width: 10,
-                                thickness: 1,
-                                color: Theme.of(context).accentColor,
-                              ),
-                              Text(
-                                '${cartItemList[index].pCountOrdered}',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                ),
-                              ),
-                              VerticalDivider(
-                                width: 10,
-                                thickness: 1,
-                                color: Theme.of(context).accentColor,
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                        top: 4.0, bottom: 4.0),
+                                    child: SizedBox(
+                                      child: Text(
+                                          cartItemList[index].pCategoryName),
+                                      width: 120,
+                                    ),
+                                  ),
+                                  Text(
+                                      'Quantity: ${cartItemList[index].pQuantity}'),
+                                ],
                               ),
                               InkWell(
                                 onTap: () {
-                                  if (cartItemList[index].pCountOrdered < 5) {
-                                    CartItems x = new CartItems(
-                                      pImage: cartItemList[index].pImage,
-                                      pName: cartItemList[index].pName,
-                                      pCountOrdered:
-                                          cartItemList[index].pCountOrdered + 1,
-                                      pCategoryName:
-                                          cartItemList[index].pCategoryName,
-                                      pMrp: cartItemList[index].pMrp,
-                                      pSp: cartItemList[index].pSp,
-                                      pQuantity: cartItemList[index].pQuantity,
-                                      pAvailability:
-                                          cartItemList[index].pAvailability,
-                                    );
-                                    _update(x);
-                                    setState(() {
-                                      cartItemList[index].pCountOrdered++;
-                                      _checkoutPrice = calPrice(cartItemList);
-                                    });
-                                  }
+                                  _delete(cartItemList[index].pName +
+                                      cartItemList[index].pQuantity);
+                                  Fluttertoast.showToast(
+                                      msg: "Item removed from the cart");
+                                  setState(() {
+                                    cartItemList.removeAt(index);
+                                    _checkoutPrice = calPrice(cartItemList);
+                                  });
                                 },
                                 child: Icon(
-                                  Icons.add,
-                                  size: 18,
+                                  Icons.delete,
                                   color: Theme.of(context).accentColor,
                                 ),
                               ),
                             ],
                           ),
+                          trailing: Column(
+                            // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Text(
+                                'Rs ${cartItemList[index].pMrp * cartItemList[index].pCountOrdered}',
+                                style: TextStyle(
+                                  color: Colors.grey[400],
+                                  decoration: TextDecoration.lineThrough,
+                                ),
+                              ),
+                              Text(
+                                'Rs ${cartItemList[index].pSp * cartItemList[index].pCountOrdered}',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.rectangle,
+                                  border: Border.all(
+                                      color: Theme.of(context).accentColor,
+                                      width: 1.0),
+                                ),
+                                width: 75,
+                                height: 20,
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: <Widget>[
+                                    InkWell(
+                                      onTap: () {
+                                        if (cartItemList[index].pCountOrdered ==
+                                            1) {
+                                          _delete(cartItemList[index].pName +
+                                              cartItemList[index].pQuantity);
+                                          setState(() {
+                                            cartItemList.removeAt(index);
+                                            _checkoutPrice =
+                                                calPrice(cartItemList);
+                                          });
+                                        } else if (cartItemList[index]
+                                                .pCountOrdered >
+                                            1) {
+                                          CartItems x = new CartItems(
+                                            pImage: cartItemList[index].pImage,
+                                            pName: cartItemList[index].pName,
+                                            pCountOrdered: cartItemList[index]
+                                                    .pCountOrdered -
+                                                1,
+                                            pCategoryName: cartItemList[index]
+                                                .pCategoryName,
+                                            pMrp: cartItemList[index].pMrp,
+                                            pSp: cartItemList[index].pSp,
+                                            pQuantity:
+                                                cartItemList[index].pQuantity,
+                                            pAvailability: cartItemList[index]
+                                                .pAvailability,
+                                          );
+                                          _update(x);
+                                          setState(() {
+                                            cartItemList[index].pCountOrdered--;
+                                            _checkoutPrice =
+                                                calPrice(cartItemList);
+                                          });
+                                        }
+                                      },
+                                      child: Icon(
+                                        Icons.remove,
+                                        size: 18,
+                                        color: Theme.of(context).accentColor,
+                                      ),
+                                    ),
+                                    VerticalDivider(
+                                      width: 10,
+                                      thickness: 1,
+                                      color: Theme.of(context).accentColor,
+                                    ),
+                                    Text(
+                                      '${cartItemList[index].pCountOrdered}',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                    VerticalDivider(
+                                      width: 10,
+                                      thickness: 1,
+                                      color: Theme.of(context).accentColor,
+                                    ),
+                                    InkWell(
+                                      onTap: () {
+                                        if (cartItemList[index].pCountOrdered <
+                                            5) {
+                                          CartItems x = new CartItems(
+                                            pImage: cartItemList[index].pImage,
+                                            pName: cartItemList[index].pName,
+                                            pCountOrdered: cartItemList[index]
+                                                    .pCountOrdered +
+                                                1,
+                                            pCategoryName: cartItemList[index]
+                                                .pCategoryName,
+                                            pMrp: cartItemList[index].pMrp,
+                                            pSp: cartItemList[index].pSp,
+                                            pQuantity:
+                                                cartItemList[index].pQuantity,
+                                            pAvailability: cartItemList[index]
+                                                .pAvailability,
+                                          );
+                                          _update(x);
+                                          setState(() {
+                                            cartItemList[index].pCountOrdered++;
+                                            _checkoutPrice =
+                                                calPrice(cartItemList);
+                                          });
+                                        }
+                                      },
+                                      child: Icon(
+                                        Icons.add,
+                                        size: 18,
+                                        color: Theme.of(context).accentColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
+                        Divider(),
                       ],
                     ),
-                  ),
-                  Divider(),
-                ],
+                  );
+                },
               ),
-            );
-          },
-        ),
       ),
     );
   }

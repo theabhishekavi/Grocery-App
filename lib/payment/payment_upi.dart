@@ -46,7 +46,7 @@ class _PaymentUpiState extends State<PaymentUpi> {
       receiverName: receiverName,
       transactionRefId: transactionRefID,
       transactionNote: 'PAYING TO ANIL STORE',
-      amount: 1,
+      amount: amount,
     );
     String response = await upi.startTransaction();
     return response;
@@ -95,7 +95,7 @@ class _PaymentUpiState extends State<PaymentUpi> {
               style: TextStyle(fontSize: 20),
             ),
             Text(
-              '(PAY ₹ 1)',
+              '(PAY ₹ ${widget.checkOutPrice})',
               style: TextStyle(
                 fontSize: 17,
                 color: Colors.grey[600],
@@ -132,7 +132,7 @@ class _PaymentUpiState extends State<PaymentUpi> {
                               details[2][selectedRadioTile - 1],
                               details[1][selectedRadioTile - 1],
                               DateTime.now().millisecondsSinceEpoch.toString(),
-                              1)
+                              widget.checkOutPrice)
                           .then((res) {
                         print('Printing Response $res');
                         if (res == 'app_not_installed') {

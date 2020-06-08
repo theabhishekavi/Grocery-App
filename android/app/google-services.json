@@ -8,6 +8,72 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:1034680479257:android:789c4ec7c322cc0dc78488",
+        "android_client_info": {
+          "package_name": "com.abhishek.groceryadmin"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1034680479257-f33jvrp26dree7tpluq2u05geqs891ro.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.abhishek.groceryadmin",
+            "certificate_hash": "da33cea05cb74c62ba3eca5431cc3abe945a1249"
+          }
+        },
+        {
+          "client_id": "1034680479257-gsa2su0c4c7k78e3s1vud0v7mmufei7o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDplSgeFKYBLd7AcvLZlQjlZUejqfjUEOA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1034680479257-gsa2su0c4c7k78e3s1vud0v7mmufei7o.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1034680479257:android:bd5d23ed769c684bc78488",
+        "android_client_info": {
+          "package_name": "com.anilstore.shop"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1034680479257-gsa2su0c4c7k78e3s1vud0v7mmufei7o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDplSgeFKYBLd7AcvLZlQjlZUejqfjUEOA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1034680479257-gsa2su0c4c7k78e3s1vud0v7mmufei7o.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:1034680479257:android:9190f1432db9799fc78488",
         "android_client_info": {
           "package_name": "com.example.shop"
@@ -15,7 +81,7 @@
       },
       "oauth_client": [
         {
-          "client_id": "1034680479257-bnhvgjjm07rm08at8nmuuabb92hnnuel.apps.googleusercontent.com",
+          "client_id": "1034680479257-4mot51v3b1dobjtv9fj05ceukejd006g.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.example.shop",

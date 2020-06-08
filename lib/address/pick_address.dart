@@ -1,15 +1,16 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:geocoder/geocoder.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shop/database/address_helper.dart';
 import 'package:shop/address/my_address_screen.dart';
 import 'package:shop/models/address_model.dart';
-import 'package:shop/payment/payment_page.dart';
 import 'package:shop/utils/strings.dart';
-// import 'package:permission_handler/permission_handler.dart';
+import 'package:geolocator/geolocator.dart';
 
 class PickAddress extends StatefulWidget {
   static const routeName = '/PickAddress';
@@ -21,6 +22,7 @@ class PickAddress extends StatefulWidget {
 class _PickAddressState extends State<PickAddress> {
   AddressHelper _addressHelper = AddressHelper();
   AddressModel _addressModel;
+  Position currentLocation;
 
   TextEditingController _nameController,
       _localityController,
@@ -38,6 +40,36 @@ class _PickAddressState extends State<PickAddress> {
     sharedPreferences = await SharedPreferences.getInstance();
   }
 
+  GoogleMapController _controller;
+  Set<Polyline> _polyLine = HashSet<Polyline>();
+
+  void _onMapCreated(GoogleMapController controller) {
+    _controller = controller;
+  }
+
+  void _setPolylines() {
+    List<LatLng> polylineLatLongs = List<LatLng>();
+    polylineLatLongs.add(LatLng(25.2154, 86.9770));
+    polylineLatLongs.add(LatLng(25.228469, 86.986870));
+    polylineLatLongs.add(LatLng(25.236476, 86.983513));
+    polylineLatLongs.add(LatLng(25.243920, 86.997812));
+
+    polylineLatLongs.add(LatLng(25.253779, 87.000131));
+    polylineLatLongs.add(LatLng(25.256496, 86.989027));
+    polylineLatLongs.add(LatLng(25.250285, 86.972292));
+    polylineLatLongs.add(LatLng(25.241591, 86.969432));
+    polylineLatLongs.add(LatLng(25.233943, 86.973426));
+    polylineLatLongs.add(LatLng(25.217211, 86.971154));
+    polylineLatLongs.add(LatLng(25.2154, 86.9770));
+
+    _polyLine.add(Polyline(
+      polylineId: PolylineId("0"),
+      points: polylineLatLongs,
+      width: 1,
+      color: Theme.of(context).primaryColor,
+    ));
+  }
+
   @override
   initState() {
     super.initState();
@@ -48,33 +80,28 @@ class _PickAddressState extends State<PickAddress> {
     _landmarkController = TextEditingController(text: "");
     _pincodeController = TextEditingController(text: "");
     _numberController = TextEditingController(text: "");
+
     initializeSharedPreferences().then((_) {
+      _setPolylines();
       setState(() {});
     });
   }
 
-  GoogleMapController _controller;
+  PermissionStatus status;
 
-  void mapCreated(controller) {
-    setState(() {
-      _controller = controller;
-    });
+  Future<void> permission() async {
+    status = await PermissionHandler()
+        .checkPermissionStatus(PermissionGroup.location);
+    print(status);
+    if (status == PermissionStatus.denied) {
+      await PermissionHandler().requestPermissions([PermissionGroup.location]);
+    }
   }
 
-  // PermissionStatus status;
-
-  // void permission() async {
-  //   status = await PermissionHandler()
-  //       .checkPermissionStatus(PermissionGroup.locationWhenInUse);
-
-  //   if (status == PermissionStatus.unknown) {
-  //     await PermissionHandler()
-  //         .requestPermissions([PermissionGroup.locationWhenInUse]);
-  //   }
-
-  //   status = await PermissionHandler()
-  //       .checkPermissionStatus(PermissionGroup.locationWhenInUse);
-  // }
+  Future<Position> getCurrentLocation() async {
+    return Geolocator()
+        .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+  }
 
   // Future<void> getUserAddress(LatLng location) async {
   //   final coordinates = new Coordinates(location.latitude, location.longitude);
@@ -114,23 +141,24 @@ class _PickAddressState extends State<PickAddress> {
               child: Stack(
                 children: <Widget>[
                   GoogleMap(
+                    onMapCreated: _onMapCreated,
                     onTap: (location) {
-                      print(location.latitude);
+                      setState(() {
+                        _initialLatitude = location.latitude;
+                        _initialLongitude = location.longitude;
+                      });
                     },
-                    zoomGesturesEnabled: false,
+                    zoomGesturesEnabled: true,
                     myLocationButtonEnabled: true,
                     initialCameraPosition: CameraPosition(
                       target: LatLng(_initialLatitude, _initialLongitude),
-                      zoom: 14.0,
+                      zoom: 15.0,
                     ),
-                    // onMapCreated: mapCreated,
+                    polylines: _polyLine,
                     markers: Set<Marker>.of(
                       <Marker>[
                         Marker(
-                          // onTap: () {
-                          //   InfoWindow(title: "Hold and Drag"); //not working
-                          // },
-                          draggable: true,
+                          draggable: false,
                           markerId: MarkerId('1'),
                           position: LatLng(_initialLatitude, _initialLongitude),
                           // onDragEnd: (location) {
@@ -146,10 +174,17 @@ class _PickAddressState extends State<PickAddress> {
                     alignment: Alignment.bottomRight,
                     child: Padding(
                       padding: const EdgeInsets.all(15.0),
-                      child: Icon(
-                        Icons.my_location,
-                        size: 25,
-                        color: Theme.of(context).primaryColor,
+                      child: InkWell(
+                        onTap: () async {
+                          await permission();
+                          currentLocation = await getCurrentLocation();
+                          print(currentLocation.latitude);
+                        },
+                        child: Icon(
+                          Icons.my_location,
+                          size: 25,
+                          color: Theme.of(context).primaryColor,
+                        ),
                       ),
                     ),
                   ),
@@ -163,6 +198,14 @@ class _PickAddressState extends State<PickAddress> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Text(
+                      "Currently, we are accepting orders only in the region enclosed in the map. \n(PS: Zoom out to see the enclosed area)",
+                      style: TextStyle(color: Theme.of(context).primaryColor),
+                      softWrap: true,
+                    ),
+                  ),
                   Card(
                     elevation: 5.0,
                     child: Padding(

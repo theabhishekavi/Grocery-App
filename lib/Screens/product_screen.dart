@@ -25,53 +25,7 @@ class _ProductScreenState extends State<ProductScreen> {
   FavouriteHelper favouriteHelper = FavouriteHelper();
   List<CartItems> cartItemList = [];
   List<FavouriteItems> favItemList = [];
-  List<dynamic> productList = [
-    // ProductModel(
-    //     productName: 'Bread',
-    //     productImage: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
-    //     productAvailability: 100,
-    //     productSp: 27,
-    //     productCountOrdered: 0,
-    //     productIsFav: false,
-    //     productMrp: 27,
-    //     productQuantity: '1'),
-    // ProductModel(
-    //     productName: 'Jam',
-    //     productImage: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
-    //     productAvailability: 100,
-    //     productSp: 27,
-    //     productCountOrdered: 0,
-    //     productIsFav: false,
-    //     productMrp: 30,
-    //     productQuantity: '1'),
-    // ProductModel(
-    //     productName: 'Toast',
-    //     productImage: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
-    //     productAvailability: 100,
-    //     productSp: 27,
-    //     productCountOrdered: 0,
-    //     productIsFav: false,
-    //     productMrp: 30,
-    //     productQuantity: '1'),
-    // ProductModel(
-    //     productName: 'Pav',
-    //     productImage: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
-    //     productAvailability: 100,
-    //     productSp: 27,
-    //     productCountOrdered: 0,
-    //     productIsFav: false,
-    //     productMrp: 30,
-    //     productQuantity: '1'),
-    // ProductModel(
-    //     productName: 'Butter',
-    //     productImage: 'https://i.ytimg.com/vi/OuYoVDDr7_8/hqdefault.jpg',
-    //     productAvailability: 100,
-    //     productSp: 27,
-    //     productCountOrdered: 0,
-    //     productIsFav: false,
-    //     productMrp: 30,
-    //     productQuantity: '1'),
-  ];
+  List<dynamic> productList = [];
   int discountPer(int mrp, int sp) {
     double res = (mrp - sp) / mrp * 100.0;
     return res.round();
@@ -163,7 +117,7 @@ class _ProductScreenState extends State<ProductScreen> {
               padding: const EdgeInsets.all(10.0),
               child: (widget.categoryName == null)
                   ? Text(
-                      '${widget.categoryType}(All Sub Categories)',
+                      '${widget.categoryType} (All Sub Categories)',
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w300,
@@ -607,6 +561,11 @@ class _ProductScreenState extends State<ProductScreen> {
     String categoryName;
     String productName, productImage, productDetails, productQuantity;
     int productMrp, productSp, productAvailability, productCount;
+    String productImage2, productImage3;
+    int productOfferQuantity,
+        productOfferDiscountPercentage,
+        productOfferDiscountRupees;
+
     await databaseReference
         .child('categories')
         .once()
@@ -616,7 +575,7 @@ class _ProductScreenState extends State<ProductScreen> {
         catTypeName = catTypeKey;
         if (catTypeName == widget.categoryType) {
           if (widget.categoryName == null) {
-            for (int j = 1; j <= 4; j++) {
+            for (int j = 1; j < catTypevalue.length; j++) {
               Map<dynamic, dynamic> val1 = catTypevalue['$j'];
               categoryName = val1['category_name'];
               List<dynamic> productval1 = val1['products'];
@@ -630,6 +589,15 @@ class _ProductScreenState extends State<ProductScreen> {
                   productMrp = productval1[i]['product_mrp'];
                   productAvailability = productval1[i]['product_availability'];
                   productCount = productval1[i]['product_count'];
+                  productImage2 = productval1[i]['product_image2'];
+                  productImage3 = productval1[i]['product_image3'];
+                  productOfferQuantity =
+                      productval1[i]['product_offer_quantity'];
+                  productOfferDiscountPercentage =
+                      productval1[i]['product_offer_discount_percentage'];
+                  productOfferDiscountRupees =
+                      productval1[i]['product_offer_discount_rupees'];
+
                   ProductTight productTight = ProductTight(
                     categoryType: catTypeName,
                     categoryName: categoryName,
@@ -643,104 +611,124 @@ class _ProductScreenState extends State<ProductScreen> {
                     productIsFav: false,
                     productAvailability: productAvailability,
                     productCount: productCount,
+                    productImage2: productImage2,
+                    productImage3: productImage3,
+                    productOfferQuantity: productOfferQuantity,
+                    productOfferDiscountPercentage:
+                        productOfferDiscountPercentage,
+                    productOfferDiscountRupees: productOfferDiscountRupees,
                   );
                   productList.add(productTight);
                 } else {
-                  List<dynamic> quantityVariants =
-                      productval1[i]['product_quantity'];
-                  print(quantityVariants.length);
-                  List<ProductQuantityVariants> productQuantityVariantsList =
-                      [];
-                  for (int j = 1; j < quantityVariants.length; j++) {
-                    ProductQuantityVariants productQuantityVariants =
-                        ProductQuantityVariants(
-                            productAvailability: quantityVariants[j]
-                                ['product_availability'],
-                            productCount: quantityVariants[j]['product_count'],
-                            productMrp: quantityVariants[j]['product_mrp'],
-                            productQuantity: quantityVariants[j]
-                                ['product_quantity'],
-                            productSp: quantityVariants[j]['product_sp']);
-                    productQuantityVariantsList.add(productQuantityVariants);
-                  }
-                  ProductLoose productLoose = ProductLoose(
-                    categoryType: catTypeName,
-                    categoryName: categoryName,
-                    productDetails: productDetails,
-                    productImage: productImage,
-                    productName: productName,
-                    productQuantity: productQuantityVariantsList,
-                  );
+                  // List<dynamic> quantityVariants =
+                  //     productval1[i]['product_quantity'];
+                  // print(quantityVariants.length);
+                  // List<ProductQuantityVariants> productQuantityVariantsList =
+                  //     [];
+                  // for (int j = 1; j < quantityVariants.length; j++) {
+                  //   ProductQuantityVariants productQuantityVariants =
+                  //       ProductQuantityVariants(
+                  //           productAvailability: quantityVariants[j]
+                  //               ['product_availability'],
+                  //           productCount: quantityVariants[j]['product_count'],
+                  //           productMrp: quantityVariants[j]['product_mrp'],
+                  //           productQuantity: quantityVariants[j]
+                  //               ['product_quantity'],
+                  //           productSp: quantityVariants[j]['product_sp']);
+                  //   productQuantityVariantsList.add(productQuantityVariants);
+                  // }
+                  // ProductLoose productLoose = ProductLoose(
+                  //   categoryType: catTypeName,
+                  //   categoryName: categoryName,
+                  //   productDetails: productDetails,
+                  //   productImage: productImage,
+                  //   productName: productName,
+                  //   productQuantity: productQuantityVariantsList,
+                  // );
                   // productList.add(productLoose);
                 }
               }
             } //j
           } //categoryName == null i.e,.categories screen
           if (widget.categoryName != null) {
-            for (int j = 1; j <= 4; j++) {
+            for (int j = 1; j < catTypevalue.length; j++) {
               if (catTypevalue['$j']['category_name'] == widget.categoryName) {
                 Map<dynamic, dynamic> val1 = catTypevalue['$j'];
                 categoryName = val1['category_name'];
 
                 List<dynamic> productval1 = val1['products'];
                 for (int i = 1; i < productval1.length; i++) {
-                  if(productval1[i]!=null){
+                  if (productval1[i] != null) {
                     productName = productval1[i]['product_name'];
-                  productImage = productval1[i]['product_image'];
-                  productDetails = productval1[i]['product_details'];
-                  if (productval1[i]['product_quantity'] is String) {
-                    productSp = productval1[i]['product_sp'];
-                    productQuantity = productval1[i]['product_quantity'];
-                    productMrp = productval1[i]['product_mrp'];
-                    productAvailability =
-                        productval1[i]['product_availability'];
-                    productCount = productval1[i]['product_count'];
-                    ProductTight productTight = ProductTight(
-                      categoryType: catTypeName,
-                      categoryName: categoryName,
-                      productName: productName,
-                      productImage: productImage,
-                      productDetails: productDetails,
-                      productSp: productSp,
-                      productQuantity: productQuantity,
-                      productMrp: productMrp,
-                      productCountOrdered: 0,
-                      productIsFav: false,
-                      productAvailability: productAvailability,
-                      productCount: productCount,
-                    );
-                    productList.add(productTight);
-                  } else {
-                    List<dynamic> quantityVariants =
-                        productval1[i]['product_quantity'];
-                    print(quantityVariants.length);
-                    List<ProductQuantityVariants> productQuantityVariantsList =
-                        [];
-                    for (int j = 1; j < quantityVariants.length; j++) {
-                      ProductQuantityVariants productQuantityVariants =
-                          ProductQuantityVariants(
-                              productAvailability: quantityVariants[j]
-                                  ['product_availability'],
-                              productCount: quantityVariants[j]
-                                  ['product_count'],
-                              productMrp: quantityVariants[j]['product_mrp'],
-                              productQuantity: quantityVariants[j]
-                                  ['product_quantity'],
-                              productSp: quantityVariants[j]['product_sp']);
-                      productQuantityVariantsList.add(productQuantityVariants);
+                    productImage = productval1[i]['product_image'];
+                    productDetails = productval1[i]['product_details'];
+                    if (productval1[i]['product_quantity'] is String) {
+                      productSp = productval1[i]['product_sp'];
+                      productQuantity = productval1[i]['product_quantity'];
+                      productMrp = productval1[i]['product_mrp'];
+                      productAvailability =
+                          productval1[i]['product_availability'];
+                      productCount = productval1[i]['product_count'];
+                      productImage2 = productval1[i]['product_image2'];
+                      productImage3 = productval1[i]['product_image3'];
+                      productOfferQuantity =
+                          productval1[i]['product_offer_quantity'];
+                      productOfferDiscountPercentage =
+                          productval1[i]['product_offer_discount_percentage'];
+                      productOfferDiscountRupees =
+                          productval1[i]['product_offer_discount_rupees'];
+                      ProductTight productTight = ProductTight(
+                        categoryType: catTypeName,
+                        categoryName: categoryName,
+                        productName: productName,
+                        productImage: productImage,
+                        productDetails: productDetails,
+                        productSp: productSp,
+                        productQuantity: productQuantity,
+                        productMrp: productMrp,
+                        productCountOrdered: 0,
+                        productIsFav: false,
+                        productAvailability: productAvailability,
+                        productCount: productCount,
+                        productImage2: productImage2,
+                        productImage3: productImage3,
+                        productOfferQuantity: productOfferQuantity,
+                        productOfferDiscountPercentage:
+                            productOfferDiscountPercentage,
+                        productOfferDiscountRupees: productOfferDiscountRupees,
+                      );
+                      productList.add(productTight);
                     }
-                    ProductLoose productLoose = ProductLoose(
-                      categoryType: catTypeName,
-                      categoryName: categoryName,
-                      productDetails: productDetails,
-                      productImage: productImage,
-                      productName: productName,
-                      productQuantity: productQuantityVariantsList,
-                    );
-                    // productList.add(productLoose);
+                    //  else {
+                    //   List<dynamic> quantityVariants =
+                    //       productval1[i]['product_quantity'];
+                    //   print(quantityVariants.length);
+                    //   List<ProductQuantityVariants> productQuantityVariantsList =
+                    //       [];
+                    //   for (int j = 1; j < quantityVariants.length; j++) {
+                    //     ProductQuantityVariants productQuantityVariants =
+                    //         ProductQuantityVariants(
+                    //             productAvailability: quantityVariants[j]
+                    //                 ['product_availability'],
+                    //             productCount: quantityVariants[j]
+                    //                 ['product_count'],
+                    //             productMrp: quantityVariants[j]['product_mrp'],
+                    //             productQuantity: quantityVariants[j]
+                    //                 ['product_quantity'],
+                    //             productSp: quantityVariants[j]['product_sp']);
+                    //     productQuantityVariantsList.add(productQuantityVariants);
+                    //   }
+                    //   ProductLoose productLoose = ProductLoose(
+                    //     categoryType: catTypeName,
+                    //     categoryName: categoryName,
+                    //     productDetails: productDetails,
+                    //     productImage: productImage,
+                    //     productName: productName,
+                    //     productQuantity: productQuantityVariantsList,
+                    //   );
+                    //   // productList.add(productLoose);
+                    // }
                   }
-                  }
-                  
                 }
               }
             }

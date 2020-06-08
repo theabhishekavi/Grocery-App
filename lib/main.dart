@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:shop/Screens/search_products.dart';
 import 'package:shop/drawer/favourite_screen.dart';
 import 'package:shop/address/my_address_screen.dart';
 import 'package:shop/orders/my_order_screen.dart';
@@ -51,6 +52,7 @@ class MyApp extends StatelessWidget {
         MyOrderScreen.routeName: (BuildContext context) => MyOrderScreen(),
         MyAddressScreen.routeName: (BuildContext context) => MyAddressScreen(),
         OrderCheckout.routeName: (BuildContext context) => OrderCheckout(),
+        SearchProducts.routeName:(BuildContext context) => SearchProducts(),
       },
     );
   }
